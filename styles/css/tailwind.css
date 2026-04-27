@@ -88,19 +88,19 @@
 }
 
 @utility cmyk-split {
+  --cmyk-spread: 2px;
   filter:
-    drop-shadow(2px 2px 0 var(--spark-blue))
-    drop-shadow(-2px 2px 0 var(--spark-pink))
-    drop-shadow(2px -2px 0 var(--spark-yellow));
-  transition: translate 320ms var(--ease-out-expo);
+    drop-shadow(var(--cmyk-spread) var(--cmyk-spread) 0 var(--spark-blue))
+    drop-shadow(calc(-1 * var(--cmyk-spread)) var(--cmyk-spread) 0 var(--spark-pink))
+    drop-shadow(var(--cmyk-spread) calc(-1 * var(--cmyk-spread)) 0 var(--spark-yellow));
+  transition: filter 280ms var(--ease-out-expo);
 }
 
-/* Hover: shift the whole text by a single offset so the layered CMYK
-   channels move as one block. Uses the `translate` CSS property (not
-   `transform`) to avoid fighting any Tailwind transform utilities on
-   the same element. */
+/* Letterpress hover: bloom the CMYK channels apart on pointer-capable devices.
+   Filter transitions interpolate drop-shadow offsets, so the channels spread
+   smoothly when --cmyk-spread changes. Touch devices skip this entirely. */
 @media (hover: hover) {
   .cmyk-split:hover {
-    translate: 4px -4px;
+    --cmyk-spread: 5px;
   }
 }
