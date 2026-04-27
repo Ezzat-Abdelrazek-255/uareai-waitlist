@@ -7,7 +7,6 @@ import IssueTicker from "@/components/issue-ticker";
 import NoiseOverlay from "@/components/noise-overlay";
 import SmoothScroll from "@/components/smooth-scroll";
 import TextureOverlay from "@/components/texture-overlay";
-import VhsBlip from "@/components/vhs-blip";
 
 const futura = localFont({
   src: "./fonts/Futura-Extra-Bold.woff",
@@ -50,7 +49,6 @@ export default function RootLayout({
           {children}
           <TextureOverlay />
           <NoiseOverlay />
-          <VhsBlip />
         </SmoothScroll>
       </body>
     </html>
