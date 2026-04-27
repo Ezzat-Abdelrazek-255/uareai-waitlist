@@ -59,6 +59,10 @@ type Props = {
   setPinViewports: (v: number) => void;
   exitRotation: number;
   setExitRotation: (v: number) => void;
+  halftone: boolean;
+  setHalftone: (v: boolean) => void;
+  halftoneDuration: number;
+  setHalftoneDuration: (v: number) => void;
   onReplay: () => void;
   onReset: () => void;
 };
@@ -106,6 +110,10 @@ const HeroAnimationController = ({
   setPinViewports,
   exitRotation,
   setExitRotation,
+  halftone,
+  setHalftone,
+  halftoneDuration,
+  setHalftoneDuration,
   onReplay,
   onReset,
 }: Props) => {
@@ -274,6 +282,27 @@ const HeroAnimationController = ({
             step={25}
             value={stackStagger}
             onChange={(e) => setStackStagger(Number(e.target.value))}
+          />
+        </Row>
+
+        <label className="flex items-center justify-between gap-2 text-[10px] uppercase">
+          <span>Halftone resolve</span>
+          <input
+            type="checkbox"
+            checked={halftone}
+            onChange={(e) => setHalftone(e.target.checked)}
+          />
+        </label>
+
+        <Row label="Halftone duration" value={`${halftoneDuration}ms`}>
+          <input
+            type="range"
+            min={100}
+            max={3000}
+            step={50}
+            value={halftoneDuration}
+            disabled={!halftone}
+            onChange={(e) => setHalftoneDuration(Number(e.target.value))}
           />
         </Row>
       </div>

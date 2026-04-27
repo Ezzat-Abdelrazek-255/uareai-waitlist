@@ -33,6 +33,8 @@ const DEFAULTS = {
   stackStagger: 150,
   pinViewports: 4,
   exitRotation: 25,
+  halftone: true,
+  halftoneDuration: 700,
 };
 
 const HeroSection = () => {
@@ -49,6 +51,10 @@ const HeroSection = () => {
   const [stackStagger, setStackStagger] = useState(DEFAULTS.stackStagger);
   const [pinViewports, setPinViewports] = useState(DEFAULTS.pinViewports);
   const [exitRotation, setExitRotation] = useState(DEFAULTS.exitRotation);
+  const [halftone, setHalftone] = useState(DEFAULTS.halftone);
+  const [halftoneDuration, setHalftoneDuration] = useState(
+    DEFAULTS.halftoneDuration,
+  );
 
   // Becomes true after the CSS intro finishes — gates GSAP/ScrollTrigger init
   // and Lenis start. Stays true after the first transition.
@@ -119,6 +125,7 @@ const HeroSection = () => {
     "--stack-delay": `${stackDelay}ms`,
     "--stack-duration": `${stackDuration}ms`,
     "--stack-stagger": `${stackStagger}ms`,
+    "--halftone-duration": `${halftoneDuration}ms`,
   } as React.CSSProperties;
 
   // 3. GSAP scroll-pin timeline. Initializes only after intro completes.
@@ -215,6 +222,8 @@ const HeroSection = () => {
     setStackStagger(DEFAULTS.stackStagger);
     setPinViewports(DEFAULTS.pinViewports);
     setExitRotation(DEFAULTS.exitRotation);
+    setHalftone(DEFAULTS.halftone);
+    setHalftoneDuration(DEFAULTS.halftoneDuration);
     setReplayKey((k) => k + 1);
   };
 
@@ -281,7 +290,7 @@ const HeroSection = () => {
             {/* Inner wrapper: re-mounts on Replay to retrigger the CSS drop animation. */}
             <div
               key={`drop-${replayKey}`}
-              className="stack-drop absolute inset-0"
+              className={`stack-drop${halftone ? " halftone" : ""} absolute inset-0`}
               style={{ "--stack-i": i } as React.CSSProperties}
             >
               <Image
@@ -336,6 +345,10 @@ const HeroSection = () => {
           setPinViewports={setPinViewports}
           exitRotation={exitRotation}
           setExitRotation={setExitRotation}
+          halftone={halftone}
+          setHalftone={setHalftone}
+          halftoneDuration={halftoneDuration}
+          setHalftoneDuration={setHalftoneDuration}
           onReplay={replay}
           onReset={reset}
         />

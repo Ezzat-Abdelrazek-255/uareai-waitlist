@@ -183,6 +183,54 @@ video {
   }
 }
 
+/* Halftone-dot resolve overlay for the polaroid stack.
+   Pure-CSS halftone recipe: a radial-gradient at fixed cell size +
+   `mix-blend-mode: multiply` + heavy `contrast()` collapse the smooth
+   gradient into a crisp newsprint dot pattern. As the cell size shrinks
+   toward sub-pixel and opacity fades to 0, the dots dissolve to expose
+   the photograph underneath. */
+@keyframes halftone-resolve {
+  from {
+    opacity: 1;
+    background-size: 14px 14px;
+  }
+  to {
+    opacity: 0;
+    background-size: 1px 1px;
+  }
+}
+
+.halftone {
+  position: relative;
+}
+
+.halftone::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(closest-side, #000 0%, #fff 100%) 0 0 / 14px
+    14px;
+  filter: contrast(22);
+  mix-blend-mode: multiply;
+  opacity: 1;
+  animation: halftone-resolve var(--halftone-duration, 700ms)
+    var(--ease-out-expo) both;
+  animation-delay: calc(
+    var(--reveal-delay, 900ms) + var(--reveal-stagger, 450ms) +
+      var(--reveal-duration, 2150ms) + var(--stack-delay, 0ms) +
+      var(--stack-i, 0) * var(--stack-stagger, 150ms) +
+      var(--stack-duration, 900ms)
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .halftone::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 /* Heading lines: collapse the inter-word gap during reveal, spread to final
    value at the same moment the stack starts dropping. */
 @keyframes gap-spread {
