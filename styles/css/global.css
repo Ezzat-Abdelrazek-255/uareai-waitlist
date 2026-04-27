@@ -291,3 +291,38 @@ video {
     transform: none;
   }
 }
+
+/* Rubber-stamp impact for the kicker. Lands oversized + tilted, then snaps
+   to its resting position via --ease-back-out (the slight overshoot sells
+   the "thump" without a separate shake keyframe). Translate is left to the
+   element's Tailwind utilities (Tailwind v4 uses the `translate` property,
+   not `transform`) so centering is preserved through the animation. */
+@keyframes stamp-impact {
+  from {
+    opacity: 0;
+    transform: scale(1.55) rotate(-5deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+.stamp-impact {
+  opacity: 0;
+  transform: scale(1.55) rotate(-5deg);
+  animation: stamp-impact var(--stamp-duration, 600ms)
+    var(--ease-back-out) both;
+  animation-delay: calc(
+    var(--reveal-delay, 900ms) + var(--reveal-stagger, 450ms) +
+      var(--reveal-duration, 2150ms) + var(--stack-delay, 0ms)
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp-impact {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

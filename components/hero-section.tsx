@@ -245,7 +245,7 @@ const HeroSection = () => {
     >
       <div
         key={`kicker-${replayKey}`}
-        className="sync-fade-in absolute top-[12.5rem] left-1/2 flex -translate-x-1/2 items-center justify-center gap-4 font-mono text-xs tracking-[0.3em] uppercase"
+        className="stamp-impact absolute top-[12.5rem] left-1/2 flex -translate-x-1/2 items-center justify-center gap-4 font-mono text-xs tracking-[0.3em] uppercase"
       >
         <span className="bg-foreground/30 h-px w-32 flex-1" aria-hidden />
         <span>Waitlist · Issue 01 · Apr 2026</span>
