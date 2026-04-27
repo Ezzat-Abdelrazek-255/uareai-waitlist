@@ -134,11 +134,14 @@ const HeroSection = () => {
 
       gsap.set([front, middle], { x: 0, y: 0, rotation: 0 });
 
+      // Pin spans `pinViewports` of image-peel + 1 extra viewport of hold so the
+      // title/subheading/waitlist input remain centered for 100vh after the
+      // images are gone (the user-visible "empty 100vh section").
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top top",
-          end: () => `+=${pinViewports * window.innerHeight}`,
+          end: () => `+=${(pinViewports + 1) * window.innerHeight}`,
           scrub: 0.5,
           pin: true,
           pinSpacing: true,
@@ -170,6 +173,14 @@ const HeroSection = () => {
         },
         1,
       );
+
+      // Pad the timeline with a hold tween so the last 100vh of pin is dead
+      // time — images stay off-screen, title stays centered.
+      // Peel timeline duration = 2 (front [0,1] + middle [1,2]).
+      // Pin range = (pinViewports + 1) viewports.
+      // Hold should map to 1 viewport → hold/total = 1/(pinViewports+1)
+      // → hold duration = 2 / pinViewports.
+      tl.to({}, { duration: 2 / pinViewports });
     },
     {
       scope: sectionRef,
