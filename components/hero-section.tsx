@@ -66,13 +66,19 @@ const HeroSection = () => {
 
   const lenis = useLenis();
 
-  const introEndsAt =
-    delay +
-    stagger +
-    duration +
-    Math.max(0, stackDelay) +
+  // When the LAST CSS intro animation finishes. Three candidates:
+  //   - Heading reveal line 2: delay + stagger + duration
+  //   - Stack drop (last image): heading-reveal-2 + stackDelay + (n-1)*stackStagger + stackDuration
+  //   - Sync fade-in (CTA + kicker) and gap-spread: heading-reveal-2 + stackDelay + stackDuration
+  // stackDelay can be negative (stack overlaps the reveal), so we don't clamp it.
+  const heroReveal2End = delay + stagger + duration;
+  const stackEnd =
+    heroReveal2End +
+    stackDelay +
     (STACK.length - 1) * stackStagger +
     stackDuration;
+  const fadeEnd = heroReveal2End + stackDelay + stackDuration;
+  const introEndsAt = Math.max(heroReveal2End, stackEnd, fadeEnd);
 
   // 1. Mount-only effect: scroll to top, lock body, schedule scrollReady flip.
   //    Decoupled from `lenis` so the timer is anchored to actual page-mount time.
