@@ -87,30 +87,9 @@
   }
 }
 
-/* Register --cmyk-spread so it actually interpolates on transition.
-   Without @property, custom properties switch discretely (2px → 5px in
-   one frame); the resulting filter would visibly "step" through the
-   transition rather than spread smoothly. */
-@property --cmyk-spread {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 2px;
-}
-
 @utility cmyk-split {
-  --cmyk-spread: 2px;
   filter:
-    drop-shadow(var(--cmyk-spread) var(--cmyk-spread) 0 var(--spark-blue))
-    drop-shadow(calc(-1 * var(--cmyk-spread)) var(--cmyk-spread) 0 var(--spark-pink))
-    drop-shadow(var(--cmyk-spread) calc(-1 * var(--cmyk-spread)) 0 var(--spark-yellow));
-  transition: --cmyk-spread 420ms linear;
-  will-change: filter;
-}
-
-/* Letterpress hover: bloom the CMYK channels apart on pointer-capable devices.
-   Touch devices skip this entirely. */
-@media (hover: hover) {
-  .cmyk-split:hover {
-    --cmyk-spread: 5px;
-  }
+    drop-shadow(2px 2px 0 var(--spark-blue))
+    drop-shadow(-2px 2px 0 var(--spark-pink))
+    drop-shadow(2px -2px 0 var(--spark-yellow));
 }
