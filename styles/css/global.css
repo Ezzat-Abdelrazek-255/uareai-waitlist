@@ -327,37 +327,34 @@ video {
   }
 }
 
-/* Hand-drawn marker highlight on body copy. The yellow swipe lives on a
-   pseudo-element behind the text so animating clip-path from
-   inset(0 100% 0 0) → inset(0 0 0 0) reveals the highlight left-to-right
-   without clipping any glyphs. A 2deg skew sells the "drawn by hand" feel. */
-@keyframes marker-swipe {
+/* Hand-drawn marker highlight on body copy. The fill is the mark's own
+   background, animated from 0% → 100% width. `box-decoration-break: clone`
+   gives every wrapped line its own highlight box so the swipe still works
+   when the phrase breaks across lines. Height is intentionally < 100% and
+   nudged down so the bar sits closer to x-height, like an actual marker. */
+@keyframes marker-fill {
   from {
-    clip-path: inset(0 100% 0 0);
+    background-size: 0% 88%;
   }
   to {
-    clip-path: inset(0 0 0 0);
+    background-size: 100% 88%;
   }
 }
 
 mark.marker {
-  position: relative;
-  isolation: isolate;
-  background: transparent;
   color: inherit;
-  padding: 0 0.15em;
-}
-
-mark.marker::before {
-  content: "";
-  position: absolute;
-  inset: 0.05em -0.05em;
-  background: var(--spark-yellow);
-  z-index: -1;
-  transform: skewX(-2deg);
-  clip-path: inset(0 100% 0 0);
-  animation: marker-swipe var(--marker-duration, 700ms)
-    var(--ease-out-expo) both;
+  background-image: linear-gradient(
+    var(--spark-yellow),
+    var(--spark-yellow)
+  );
+  background-repeat: no-repeat;
+  background-position: left 0.18em;
+  background-size: 0% 88%;
+  padding: 0 0.12em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: marker-fill var(--marker-duration, 700ms) var(--ease-out-expo)
+    both;
   animation-delay: calc(
     var(--reveal-delay, 900ms) + var(--reveal-stagger, 450ms) +
       var(--reveal-duration, 2150ms) + var(--stack-delay, 0ms) +
@@ -366,9 +363,9 @@ mark.marker::before {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  mark.marker::before {
+  mark.marker {
     animation: none;
-    clip-path: inset(0 0 0 0);
+    background-size: 100% 88%;
   }
 }
 
