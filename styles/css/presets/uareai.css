@@ -1,0 +1,62 @@
+html.uareai {
+  /* Brand */
+  --ink: #10100f;
+  --paper: #fafafa;
+  --uare-green: #dff693;
+  --uare-green-dark: #272d1b;
+
+  /* Spark accents — accent only, never buttons/backgrounds */
+  --spark-pink: #fe72e4;
+  --spark-pink-light: #f79eff;
+  --spark-yellow: #dfff5e;
+  --spark-orange: #ff6b45;
+  --spark-purple: #7671fe;
+  --spark-green: #69f15c;
+  --spark-blue: #92e0ff;
+
+  /* Semantic — light */
+  --background: #f3edde;
+  --foreground: var(--ink);
+  --card: #ffffff;
+  --card-foreground: var(--ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: var(--uare-green);
+  --secondary-foreground: var(--ink);
+  --muted: #f1f1ef;
+  --muted-foreground: #6b6b66;
+  --accent: var(--uare-green);
+  --accent-foreground: var(--ink);
+  --destructive: #ff6b45;
+  --destructive-foreground: var(--paper);
+
+  --input: #e6e6e3;
+  --ring: #b3b3ad;
+  --scrollbar: #d4d4cf;
+}
+
+html.uareai.dark {
+  /* Semantic — dark (deep olive canvas) */
+  --background: var(--uare-green-dark);
+  --foreground: var(--paper);
+  --card: #1d2215;
+  --card-foreground: var(--paper);
+  --popover: #1d2215;
+  --popover-foreground: var(--paper);
+  --primary: var(--uare-green);
+  --primary-foreground: var(--ink);
+  --secondary: #343c25;
+  --secondary-foreground: var(--paper);
+  --muted: #343c25;
+  --muted-foreground: #b6bfa3;
+  --accent: var(--uare-green);
+  --accent-foreground: var(--ink);
+  --destructive: #ff6b45;
+  --destructive-foreground: var(--paper);
+
+  --input: #3d4730;
+  --ring: #6b7654;
+  --scrollbar: #4a5439;
+}
