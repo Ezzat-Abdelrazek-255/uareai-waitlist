@@ -326,3 +326,48 @@ video {
     transform: none;
   }
 }
+
+/* Hand-drawn marker highlight on body copy. The yellow swipe lives on a
+   pseudo-element behind the text so animating clip-path from
+   inset(0 100% 0 0) → inset(0 0 0 0) reveals the highlight left-to-right
+   without clipping any glyphs. A 2deg skew sells the "drawn by hand" feel. */
+@keyframes marker-swipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+mark.marker {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+  color: inherit;
+  padding: 0 0.15em;
+}
+
+mark.marker::before {
+  content: "";
+  position: absolute;
+  inset: 0.05em -0.05em;
+  background: var(--spark-yellow);
+  z-index: -1;
+  transform: skewX(-2deg);
+  clip-path: inset(0 100% 0 0);
+  animation: marker-swipe var(--marker-duration, 700ms)
+    var(--ease-out-expo) both;
+  animation-delay: calc(
+    var(--reveal-delay, 900ms) + var(--reveal-stagger, 450ms) +
+      var(--reveal-duration, 2150ms) + var(--stack-delay, 0ms) +
+      var(--marker-offset, 400ms)
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  mark.marker::before {
+    animation: none;
+    clip-path: inset(0 0 0 0);
+  }
+}

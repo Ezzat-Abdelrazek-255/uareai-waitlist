@@ -314,8 +314,9 @@ const HeroSection = () => {
         className="sync-fade-in absolute bottom-24 flex w-full flex-col items-center justify-center gap-4"
       >
         <p className="max-w-md text-center font-mono">
-          Human-first AI for brands and creators who refuse to fake it. Be the
-          first to step inside.
+          Human-first AI for brands and creators who{" "}
+          <mark className="marker">refuse to fake it</mark>. Be the first to
+          step inside.
         </p>
         <WaitlistInput />
       </div>
