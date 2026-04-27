@@ -103,7 +103,8 @@
     drop-shadow(var(--cmyk-spread) var(--cmyk-spread) 0 var(--spark-blue))
     drop-shadow(calc(-1 * var(--cmyk-spread)) var(--cmyk-spread) 0 var(--spark-pink))
     drop-shadow(var(--cmyk-spread) calc(-1 * var(--cmyk-spread)) 0 var(--spark-yellow));
-  transition: --cmyk-spread 280ms var(--ease-out-expo);
+  transition: --cmyk-spread 420ms linear;
+  will-change: filter;
 }
 
 /* Letterpress hover: bloom the CMYK channels apart on pointer-capable devices.
