@@ -88,8 +88,19 @@
 }
 
 @utility cmyk-split {
+  --cmyk-spread: 2px;
   filter:
-    drop-shadow(2px 2px 0 var(--spark-blue))
-    drop-shadow(-2px 2px 0 var(--spark-pink))
-    drop-shadow(2px -2px 0 var(--spark-yellow));
+    drop-shadow(var(--cmyk-spread) var(--cmyk-spread) 0 var(--spark-blue))
+    drop-shadow(calc(-1 * var(--cmyk-spread)) var(--cmyk-spread) 0 var(--spark-pink))
+    drop-shadow(var(--cmyk-spread) calc(-1 * var(--cmyk-spread)) 0 var(--spark-yellow));
+  transition: filter 280ms var(--ease-out-expo);
+}
+
+/* Letterpress hover: bloom the CMYK channels apart on pointer-capable devices.
+   Filter transitions interpolate drop-shadow offsets, so the channels spread
+   smoothly when --cmyk-spread changes. Touch devices skip this entirely. */
+@media (hover: hover) {
+  .cmyk-split:hover {
+    --cmyk-spread: 5px;
+  }
 }
