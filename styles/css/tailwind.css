@@ -61,6 +61,7 @@
   --ease-in-out-circ: cubic-bezier(0.785, 0.135, 0.15, 0.86);
   --ease-primary: cubic-bezier(0.625, 0.05, 0, 1);
   --ease-gleasing: cubic-bezier(0.4, 0, 0, 1);
+  --ease-smooth: cubic-bezier(0.6, 0, 0.2, 1);
 
   --spacing-safe: var(--safe);
   --spacing-gap: var(--gap);
@@ -84,4 +85,11 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+}
+
+@utility cmyk-split {
+  filter:
+    drop-shadow(2px 2px 0 var(--spark-blue))
+    drop-shadow(-2px 2px 0 var(--spark-pink))
+    drop-shadow(2px -2px 0 var(--spark-yellow));
 }

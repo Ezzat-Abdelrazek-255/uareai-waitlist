@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "@/styles/css/index.css";
 import Header from "@/components/header";
 import NoiseOverlay from "@/components/noise-overlay";
+import SmoothScroll from "@/components/smooth-scroll";
 import TextureOverlay from "@/components/texture-overlay";
 
 const futura = localFont({
@@ -41,10 +42,12 @@ export default function RootLayout({
       className={`${futura.variable} ${sourceSerif4.variable} ${inconsolata.variable} uareai h-full antialiased`}
     >
       <body className="relative z-0 flex min-h-full flex-col font-sans">
-        <Header />
-        {children}
-        <TextureOverlay />
-        <NoiseOverlay />
+        <SmoothScroll>
+          <Header />
+          {children}
+          <TextureOverlay />
+          <NoiseOverlay />
+        </SmoothScroll>
       </body>
     </html>
   );

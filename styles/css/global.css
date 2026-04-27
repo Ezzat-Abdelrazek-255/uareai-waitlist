@@ -75,3 +75,145 @@ video {
   background-color: var(--foreground);
   border-radius: 9999px;
 }
+
+/* Hero heading line-by-line left→right reveal.
+   Mask is 300% wide with a soft-edge gradient (white|fade|transparent).
+   Animating mask-position from 100% 100% (transparent end over element = hidden)
+   to 0% 100% (white end over element = visible) sweeps the soft edge across. */
+@keyframes hero-reveal {
+  from {
+    -webkit-mask-position: 100% 100%;
+    mask-position: 100% 100%;
+  }
+  to {
+    -webkit-mask-position: 0% 100%;
+    mask-position: 0% 100%;
+  }
+}
+
+.hero-reveal {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #fff var(--reveal-soft-start, 33.3%),
+    rgba(255, 255, 255, 0) var(--reveal-soft-end, 66.6%)
+  );
+  mask-image: linear-gradient(
+    to right,
+    #fff var(--reveal-soft-start, 33.3%),
+    rgba(255, 255, 255, 0) var(--reveal-soft-end, 66.6%)
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 300% 100%;
+  mask-size: 300% 100%;
+  -webkit-mask-position: 100% 100%;
+  mask-position: 100% 100%;
+  animation: hero-reveal var(--reveal-duration, 2150ms)
+    var(--reveal-easing, var(--ease-smooth)) both;
+  animation-delay: var(--reveal-delay, 900ms);
+}
+
+.hero-reveal[data-line="2"] {
+  animation-delay: calc(
+    var(--reveal-delay, 0ms) + var(--reveal-stagger, 450ms)
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-reveal {
+    animation: none;
+    -webkit-mask-position: 0% 100%;
+    mask-position: 0% 100%;
+  }
+}
+
+/* Stack-of-images drop after heading reveal completes.
+   Uses the `translate` CSS property (independent of `transform`) so the
+   per-image rotation set via inline `style.transform` is preserved. */
+@keyframes stack-drop {
+  from {
+    translate: 0 -120vh;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+.stack-drop {
+  translate: 0 -120vh;
+  animation: stack-drop var(--stack-duration, 900ms)
+    var(--reveal-easing, var(--ease-smooth)) both;
+  animation-delay: calc(
+    var(--reveal-delay, 900ms) + var(--reveal-stagger, 450ms) +
+      var(--reveal-duration, 2150ms) + var(--stack-delay, 0ms) +
+      var(--stack-i, 0) * var(--stack-stagger, 150ms)
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stack-drop {
+    animation: none;
+    translate: 0 0;
+  }
+}
+
+/* Heading lines: collapse the inter-word gap during reveal, spread to final
+   value at the same moment the stack starts dropping. */
+@keyframes gap-spread {
+  from {
+    gap: 0;
+  }
+  to {
+    gap: var(--gap-target, 22vw);
+  }
+}
+
+.gap-spread {
+  gap: 0;
+  animation: gap-spread var(--stack-duration, 900ms)
+    var(--reveal-easing, var(--ease-smooth)) both;
+  animation-delay: calc(
+    var(--reveal-delay, 900ms) + var(--reveal-stagger, 450ms) +
+      var(--reveal-duration, 2150ms) + var(--stack-delay, 0ms)
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gap-spread {
+    animation: none;
+    gap: var(--gap-target, 22vw);
+  }
+}
+
+/* Fade-in synced to the moment the stack starts dropping.
+   Uses `transform` (not `translate`) so it stacks with Tailwind's
+   `-translate-x-1/2` centering on the kicker (which writes to `translate`). */
+@keyframes sync-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sync-fade-in {
+  opacity: 0;
+  transform: translateY(8px);
+  animation: sync-fade-in var(--stack-duration, 900ms)
+    var(--reveal-easing, var(--ease-smooth)) both;
+  animation-delay: calc(
+    var(--reveal-delay, 900ms) + var(--reveal-stagger, 450ms) +
+      var(--reveal-duration, 2150ms) + var(--stack-delay, 0ms)
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sync-fade-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

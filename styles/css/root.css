@@ -49,4 +49,14 @@
   --ease-in-out-circ: cubic-bezier(0.785, 0.135, 0.15, 0.86);
   --ease-primary: cubic-bezier(0.625, 0.05, 0, 1);
   --ease-gleasing: cubic-bezier(0.4, 0, 0, 1);
+  --ease-smooth: cubic-bezier(0.6, 0, 0.2, 1);
+
+  /* Doppio-derived */
+  --ease-doppio: cubic-bezier(0.725, 0.25, 0.1, 1);
+  --ease-slow-down: cubic-bezier(0, 0, 0, 1);
+
+  /* Back / overshoot */
+  --ease-back-in: cubic-bezier(0.6, -0.28, 0.735, 0.045);
+  --ease-back-out: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-back-in-out: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
