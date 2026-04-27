@@ -54,6 +54,7 @@ const HeroSection = () => {
   // and Lenis start. Stays true after the first transition.
   const [scrollReady, setScrollReady] = useState(false);
 
+  const stageRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const stackRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -134,18 +135,18 @@ const HeroSection = () => {
 
       gsap.set([front, middle], { x: 0, y: 0, rotation: 0 });
 
-      // Pin spans `pinViewports` of image-peel + 1 extra viewport of hold so the
-      // title/subheading/waitlist input remain centered for 100vh after the
-      // images are gone (the user-visible "empty 100vh section").
+      // Sticky-driven scrub. We deliberately do NOT use ScrollTrigger's `pin: true`
+      // because it re-parents the trigger into a pin-spacer div, which restarts
+      // every CSS animation on the section's children when the pin first engages.
+      // Instead, the section is `position: sticky` inside a tall stage wrapper —
+      // the section never leaves its DOM parent, so animations don't re-trigger.
+      // The stage's height (set in JSX) defines the sticky scroll range.
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: sectionRef.current,
+          trigger: stageRef.current,
           start: "top top",
-          end: () => `+=${(pinViewports + 1) * window.innerHeight}`,
+          end: "bottom bottom",
           scrub: 0.5,
-          pin: true,
-          pinSpacing: true,
-          anticipatePin: 1,
           invalidateOnRefresh: true,
         },
       });
@@ -219,11 +220,19 @@ const HeroSection = () => {
 
   const showController = process.env.NODE_ENV !== "production";
 
+  // Stage height: section (1 viewport) + image-peel scroll (pinViewports) + hold (1).
+  // Sticky range = stageHeight - sectionHeight = (pinViewports + 1) * 100vh.
+  const stageHeight = `${(pinViewports + 2) * 100}vh`;
+
   return (
+    <div
+      ref={stageRef}
+      className="hero-stage relative"
+      style={{ ...heroStyle, height: stageHeight } as React.CSSProperties}
+    >
     <section
       ref={sectionRef}
-      className="relative z-0 grid min-h-screen place-content-center"
-      style={heroStyle}
+      className="sticky top-0 z-0 grid h-screen place-content-center"
     >
       <div
         key={`kicker-${replayKey}`}
@@ -332,6 +341,7 @@ const HeroSection = () => {
         />
       )}
     </section>
+    </div>
   );
 };
 
