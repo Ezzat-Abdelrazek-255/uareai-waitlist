@@ -3,6 +3,7 @@ import { Source_Serif_4, Inconsolata } from "next/font/google";
 import localFont from "next/font/local";
 import "@/styles/css/index.css";
 import Header from "@/components/header";
+import IssueTicker from "@/components/issue-ticker";
 import NoiseOverlay from "@/components/noise-overlay";
 import SmoothScroll from "@/components/smooth-scroll";
 import TextureOverlay from "@/components/texture-overlay";
@@ -43,6 +44,7 @@ export default function RootLayout({
     >
       <body className="relative z-0 flex min-h-full flex-col font-sans">
         <SmoothScroll>
+          <IssueTicker />
           <Header />
           {children}
           <TextureOverlay />

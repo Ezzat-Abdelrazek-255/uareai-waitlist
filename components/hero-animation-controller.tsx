@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const STORAGE_KEY = "hero-animation-controller:minimized";
 
@@ -109,13 +109,10 @@ const HeroAnimationController = ({
   onReplay,
   onReset,
 }: Props) => {
-  const [minimized, setMinimizedState] = useState(true);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-    if (saved === "0") setMinimizedState(false);
-  }, []);
+  const [minimized, setMinimizedState] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    return window.localStorage.getItem(STORAGE_KEY) !== "0";
+  });
 
   const setMinimized = (v: boolean) => {
     setMinimizedState(v);

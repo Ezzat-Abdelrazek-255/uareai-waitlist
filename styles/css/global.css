@@ -76,6 +76,32 @@ video {
   border-radius: 9999px;
 }
 
+/* Issue ticker — seamless infinite marquee.
+   Inner track holds two identical groups; translating -50% lands group 2 exactly
+   where group 1 started, so the loop has no visible seam. */
+@keyframes ticker-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker .ticker-track {
+  animation: ticker-slide var(--ticker-duration, 40s) linear infinite;
+}
+
+.ticker:hover .ticker-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker .ticker-track {
+    animation: none;
+  }
+}
+
 /* Hero heading line-by-line left→right reveal.
    Mask is 300% wide with a soft-edge gradient (white|fade|transparent).
    Animating mask-position from 100% 100% (transparent end over element = hidden)
