@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Source_Serif_4, Inconsolata } from "next/font/google";
 import localFont from "next/font/local";
 import "@/styles/css/index.css";
+import AmbientSoundToggle from "@/components/ambient-sound-toggle";
 import Header from "@/components/header";
 import IssueTicker from "@/components/issue-ticker";
 import NoiseOverlay from "@/components/noise-overlay";
@@ -107,6 +108,7 @@ export default function RootLayout({
           {children}
           <TextureOverlay />
           <NoiseOverlay />
+          <AmbientSoundToggle />
         </SmoothScroll>
       </body>
     </html>
