@@ -34,6 +34,19 @@ const EASINGS = [
   "--ease-in-out-circ",
 ];
 
+// GSAP eases for the scrub-driven peel exit, focused on character (overshoot,
+// ease-in-out, glide) rather than weight. See plan in
+// ~/.claude/plans/what-do-you-think-parallel-gosling.md
+const PEEL_EASES = [
+  "back.in(1.4)",
+  "back.in(2)",
+  "power2.inOut",
+  "sine.inOut",
+  "expo.out",
+  "power2.in",
+  "none",
+];
+
 type Props = {
   delay: number;
   setDelay: (v: number) => void;
@@ -55,14 +68,10 @@ type Props = {
   setStackDuration: (v: number) => void;
   stackStagger: number;
   setStackStagger: (v: number) => void;
-  pinViewports: number;
-  setPinViewports: (v: number) => void;
   exitRotation: number;
   setExitRotation: (v: number) => void;
-  halftone: boolean;
-  setHalftone: (v: boolean) => void;
-  halftoneDuration: number;
-  setHalftoneDuration: (v: number) => void;
+  peelEase: string;
+  setPeelEase: (v: string) => void;
   onReplay: () => void;
   onReset: () => void;
 };
@@ -106,14 +115,10 @@ const HeroAnimationController = ({
   setStackDuration,
   stackStagger,
   setStackStagger,
-  pinViewports,
-  setPinViewports,
   exitRotation,
   setExitRotation,
-  halftone,
-  setHalftone,
-  halftoneDuration,
-  setHalftoneDuration,
+  peelEase,
+  setPeelEase,
   onReplay,
   onReset,
 }: Props) => {
@@ -284,27 +289,6 @@ const HeroAnimationController = ({
             onChange={(e) => setStackStagger(Number(e.target.value))}
           />
         </Row>
-
-        <label className="flex items-center justify-between gap-2 text-[10px] uppercase">
-          <span>Halftone resolve</span>
-          <input
-            type="checkbox"
-            checked={halftone}
-            onChange={(e) => setHalftone(e.target.checked)}
-          />
-        </label>
-
-        <Row label="Halftone duration" value={`${halftoneDuration}ms`}>
-          <input
-            type="range"
-            min={100}
-            max={3000}
-            step={50}
-            value={halftoneDuration}
-            disabled={!halftone}
-            onChange={(e) => setHalftoneDuration(Number(e.target.value))}
-          />
-        </Row>
       </div>
 
       <div className="flex flex-col gap-3 border-t border-[var(--border)] pt-3">
@@ -312,15 +296,18 @@ const HeroAnimationController = ({
           Scroll peel
         </span>
 
-        <Row label="Pin viewports" value={`${pinViewports.toFixed(2)}× vh`}>
-          <input
-            type="range"
-            min={0.5}
-            max={5}
-            step={0.05}
-            value={pinViewports}
-            onChange={(e) => setPinViewports(Number(e.target.value))}
-          />
+        <Row label="Peel ease" value={peelEase}>
+          <select
+            value={peelEase}
+            onChange={(e) => setPeelEase(e.target.value)}
+            className="rounded-sm border border-[var(--border)] bg-transparent px-1 py-0.5 text-xs"
+          >
+            {PEEL_EASES.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
         </Row>
 
         <Row label="Exit rotation" value={`${exitRotation}°`}>

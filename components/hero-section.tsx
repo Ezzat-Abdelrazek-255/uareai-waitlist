@@ -16,9 +16,17 @@ if (typeof window !== "undefined") {
 
 const STACK = [
   { src: "/images/2.png", rotate: "3deg", width: 2362, height: 2597 },
+  { src: "/images/0.png", rotate: "0deg", width: 2371, height: 2606 },
+  { src: "/images/1.png", rotate: "-4deg", width: 2225, height: 2439 },
+  { src: "/images/0.png", rotate: "0deg", width: 2371, height: 2606 },
   { src: "/images/1.png", rotate: "-4deg", width: 2225, height: 2439 },
   { src: "/images/0.png", rotate: "0deg", width: 2371, height: 2606 },
 ];
+
+// Peel count = number of images that scroll-out (everything except the
+// bottom-most image which stays as the anchor). Used to derive the pin
+// scroll range so every peeling image gets exactly 100vh of scroll.
+const PEEL_COUNT = STACK.length - 1;
 
 const DEFAULTS = {
   delay: 200,
@@ -31,10 +39,8 @@ const DEFAULTS = {
   stackDelay: -1500,
   stackDuration: 900,
   stackStagger: 150,
-  pinViewports: 4,
   exitRotation: 25,
-  halftone: true,
-  halftoneDuration: 700,
+  peelEase: "power2.in",
 };
 
 const HeroSection = () => {
@@ -49,12 +55,11 @@ const HeroSection = () => {
   const [stackDelay, setStackDelay] = useState(DEFAULTS.stackDelay);
   const [stackDuration, setStackDuration] = useState(DEFAULTS.stackDuration);
   const [stackStagger, setStackStagger] = useState(DEFAULTS.stackStagger);
-  const [pinViewports, setPinViewports] = useState(DEFAULTS.pinViewports);
+  // pinViewports is derived (not state) — always equals PEEL_COUNT so every
+  // peeling image gets exactly 100vh of scroll regardless of stack size.
+  const pinViewports = PEEL_COUNT;
   const [exitRotation, setExitRotation] = useState(DEFAULTS.exitRotation);
-  const [halftone, setHalftone] = useState(DEFAULTS.halftone);
-  const [halftoneDuration, setHalftoneDuration] = useState(
-    DEFAULTS.halftoneDuration,
-  );
+  const [peelEase, setPeelEase] = useState(DEFAULTS.peelEase);
 
   // Becomes true after the CSS intro finishes — gates GSAP/ScrollTrigger init
   // and Lenis start. Stays true after the first transition.
@@ -131,7 +136,6 @@ const HeroSection = () => {
     "--stack-delay": `${stackDelay}ms`,
     "--stack-duration": `${stackDuration}ms`,
     "--stack-stagger": `${stackStagger}ms`,
-    "--halftone-duration": `${halftoneDuration}ms`,
   } as React.CSSProperties;
 
   // 3. GSAP scroll-pin timeline. Initializes only after intro completes.
@@ -142,11 +146,16 @@ const HeroSection = () => {
       if (typeof window === "undefined") return;
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-      const front = stackRefs.current[2];
-      const middle = stackRefs.current[1];
-      if (!front || !middle) return;
+      // Peel every image except the bottom one (index 0 — stays as the
+      // anchor). Order them top-of-stack first so the visually-frontmost
+      // image leaves first.
+      const peelTargets = stackRefs.current
+        .slice(1)
+        .filter((el): el is HTMLDivElement => el !== null)
+        .reverse();
+      if (peelTargets.length === 0) return;
 
-      gsap.set([front, middle], { x: 0, y: 0, rotation: 0 });
+      gsap.set(peelTargets, { x: 0, y: 0, rotation: 0 });
 
       // Sticky-driven scrub. We deliberately do NOT use ScrollTrigger's `pin: true`
       // because it re-parents the trigger into a pin-spacer div, which restarts
@@ -164,41 +173,36 @@ const HeroSection = () => {
         },
       });
 
-      tl.fromTo(
-        front,
-        { x: 0, y: 0, rotation: 0 },
-        {
-          x: () => window.innerWidth * 0.85,
-          y: () => -window.innerHeight * 1.0,
-          rotation: -exitRotation,
-          ease: "power2.in",
-          duration: 1,
-        },
-        0,
-      ).fromTo(
-        middle,
-        { x: 0, y: 0, rotation: 0 },
-        {
-          x: () => -window.innerWidth * 0.85,
-          y: () => -window.innerHeight * 1.0,
-          rotation: exitRotation,
-          ease: "power2.in",
-          duration: 1,
-        },
-        1,
-      );
+      // Each image gets a 1-unit slot in the timeline, sequenced from front
+      // to back. Even slots exit right with negative rotation, odd slots exit
+      // left with positive rotation — same alternation pattern as the
+      // original 2-image version.
+      peelTargets.forEach((el, idx) => {
+        const goRight = idx % 2 === 0;
+        const direction = goRight ? 1 : -1;
+        tl.fromTo(
+          el,
+          { x: 0, y: 0, rotation: 0 },
+          {
+            x: () => direction * window.innerWidth * 0.85,
+            y: () => -window.innerHeight * 1.0,
+            rotation: goRight ? -exitRotation : exitRotation,
+            ease: peelEase,
+            duration: 1,
+          },
+          idx,
+        );
+      });
 
-      // Pad the timeline with a hold tween so the last 100vh of pin is dead
-      // time — images stay off-screen, title stays centered.
-      // Peel timeline duration = 2 (front [0,1] + middle [1,2]).
-      // Pin range = (pinViewports + 1) viewports.
-      // Hold should map to 1 viewport → hold/total = 1/(pinViewports+1)
-      // → hold duration = 2 / pinViewports.
-      tl.to({}, { duration: 2 / pinViewports });
+      // Hold tween keeps the proportion peel : hold = pinViewports : 1, so the
+      // last 100vh of pin range is dead time regardless of how many images peel.
+      // Total timeline = N (peel) + N/pinViewports (hold). Peel/total =
+      // pinViewports/(pinViewports + 1) → maps peel onto pinViewports vh of scroll.
+      tl.to({}, { duration: peelTargets.length / pinViewports });
     },
     {
       scope: sectionRef,
-      dependencies: [scrollReady, pinViewports, exitRotation],
+      dependencies: [scrollReady, exitRotation, peelEase],
     },
   );
 
@@ -226,10 +230,8 @@ const HeroSection = () => {
     setStackDelay(DEFAULTS.stackDelay);
     setStackDuration(DEFAULTS.stackDuration);
     setStackStagger(DEFAULTS.stackStagger);
-    setPinViewports(DEFAULTS.pinViewports);
     setExitRotation(DEFAULTS.exitRotation);
-    setHalftone(DEFAULTS.halftone);
-    setHalftoneDuration(DEFAULTS.halftoneDuration);
+    setPeelEase(DEFAULTS.peelEase);
     setReplayKey((k) => k + 1);
   };
 
@@ -245,122 +247,123 @@ const HeroSection = () => {
       className="hero-stage relative"
       style={{ ...heroStyle, height: stageHeight } as React.CSSProperties}
     >
-    <section
-      ref={sectionRef}
-      className="sticky top-0 z-0 grid h-screen place-content-center"
-    >
-      <div
-        key={`kicker-${replayKey}`}
-        className="stamp-impact absolute top-[12.5rem] left-1/2 flex -translate-x-1/2 items-center justify-center gap-4 font-mono text-xs tracking-[0.3em] uppercase"
+      <section
+        ref={sectionRef}
+        className="sticky top-0 z-0 grid h-screen place-content-center"
       >
-        <span className="bg-foreground/30 h-px w-32 flex-1" aria-hidden />
-        <span>Waitlist · Issue 01 · Apr 2026</span>
-        <span className="bg-foreground/30 h-px flex-1" aria-hidden />
-      </div>
-      <h1
-        className={`${cmykSplit ? "cmyk-split" : ""} text-[6vw] leading-none font-black uppercase`}
-      >
-        <div key={`l1-${replayKey}`} data-line="1" className="hero-reveal">
-          <div className="gap-spread flex justify-center">
-            <div className="flex items-baseline gap-3">
-              <UMark className="h-[0.8em] w-auto" />
-              <div>are</div>
-            </div>
-            <div className="relative flex items-baseline gap-3">
-              <UMark className="h-[0.8em] w-auto opacity-0" />
-              <div className="opacity-0">are</div>
-              <em className="absolute">AI</em>
+        <div
+          key={`kicker-${replayKey}`}
+          className="stamp-impact absolute top-[12.5rem] left-1/2 flex -translate-x-1/2 items-center justify-center gap-4 font-mono text-xs tracking-[0.3em] uppercase"
+        >
+          <span className="bg-foreground/30 h-px w-32 flex-1" aria-hidden />
+          <span>Waitlist · Issue 01 · Apr 2026</span>
+          <span className="bg-foreground/30 h-px flex-1" aria-hidden />
+        </div>
+        <h1
+          className={`${cmykSplit ? "cmyk-split" : ""} text-[min(6vw,74px)] leading-none font-black uppercase`}
+        >
+          <div key={`l1-${replayKey}`} data-line="1" className="hero-reveal">
+            <div className="gap-spread flex justify-center">
+              <div className="flex items-baseline gap-3">
+                <UMark className="h-[0.8em] w-auto" />
+                <div>are</div>
+              </div>
+              <div className="relative flex items-baseline gap-3">
+                <UMark className="h-[0.8em] w-auto opacity-0" />
+                <div className="opacity-0">are</div>
+                <em className="absolute">AI</em>
+              </div>
             </div>
           </div>
-        </div>
-        <div key={`l2-${replayKey}`} data-line="2" className="hero-reveal">
-          <div className="gap-spread flex justify-center">
-            <div>Authentic</div>
-            <div className="relative">
-              <div className="line-through">Artificial</div>
+          <div key={`l2-${replayKey}`} data-line="2" className="hero-reveal">
+            <div className="gap-spread flex justify-center">
+              <div>Authentic</div>
+              <div className="relative">
+                <div className="line-through">Artificial</div>
+              </div>
             </div>
           </div>
-        </div>
-      </h1>
-      <div className="absolute top-1/2 left-1/2 -z-10 h-fit w-[30vw] -translate-1/2">
-        {STACK.map((item, i) => (
-          // Outer wrapper: stable identity, holds GSAP ref. Never remounts on Replay.
-          <div
-            key={item.src}
-            ref={(el) => {
-              stackRefs.current[i] = el;
-            }}
-            className="absolute inset-0 will-change-transform"
-            style={{ zIndex: i } as React.CSSProperties}
-          >
-            {/* Inner wrapper: re-mounts on Replay to retrigger the CSS drop animation. */}
+        </h1>
+        {/* aspect-ratio + explicit -translate-x/y-1/2 keep the stack visually
+            centered. The shorthand -translate-1/2 only sets one axis in
+            Tailwind v4 — fine when the container collapsed to 0 height,
+            broken once the box has real dimensions. */}
+        <div className="absolute top-1/2 left-1/2 -z-10 aspect-[2371/2606] w-[min(30vw,368px)] -translate-x-1/2 -translate-y-1/2">
+          {STACK.map((item, i) => (
+            // Outer wrapper: stable identity, holds GSAP ref. Never remounts on Replay.
+            // Index is fine here — STACK is module-level static, never reordered.
             <div
-              key={`drop-${replayKey}`}
-              className={`stack-drop${halftone ? " halftone" : ""} absolute inset-0`}
-              style={{ "--stack-i": i } as React.CSSProperties}
+              key={i}
+              ref={(el) => {
+                stackRefs.current[i] = el;
+              }}
+              className="absolute inset-0 will-change-transform"
+              style={{ zIndex: i } as React.CSSProperties}
             >
-              <Image
-                src={item.src}
-                alt=""
-                width={item.width}
-                height={item.height}
-                priority={i === STACK.length - 1}
-                sizes="30vw"
-                draggable={false}
-                aria-hidden
-                className="absolute inset-0 top-1/2 h-full w-full -translate-y-1/2 object-contain [filter:contrast(1.08)_saturate(0.85)_drop-shadow(0_20px_40px_rgba(0,0,0,0.15))] select-none"
-                style={{ transform: `rotate(${item.rotate})` }}
-              />
+              {/* Inner wrapper: re-mounts on Replay to retrigger the CSS drop animation. */}
+              <div
+                key={`drop-${replayKey}`}
+                className="stack-drop absolute inset-0"
+                style={{ "--stack-i": i } as React.CSSProperties}
+              >
+                <Image
+                  src={item.src}
+                  alt=""
+                  width={item.width}
+                  height={item.height}
+                  priority={i === STACK.length - 1}
+                  sizes="30vw"
+                  draggable={false}
+                  aria-hidden
+                  className="absolute inset-0 top-1/2 h-full w-full -translate-y-1/2 object-contain [filter:contrast(1.08)_saturate(0.85)_drop-shadow(0_20px_40px_rgba(0,0,0,0.15))] select-none"
+                  style={{ transform: `rotate(${item.rotate})` }}
+                />
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
-      <div
-        key={`cta-${replayKey}`}
-        className="sync-fade-in absolute bottom-24 flex w-full flex-col items-center justify-center gap-4"
-      >
-        <p className="max-w-md text-center font-mono">
-          Human-first AI for brands and creators who{" "}
-          <mark className="marker">refuse to fake it</mark>. Be the first to
-          step inside.
-        </p>
-        <WaitlistInput />
-      </div>
-      {showController && (
-        <HeroAnimationController
-          delay={delay}
-          setDelay={setDelay}
-          duration={duration}
-          setDuration={setDuration}
-          stagger={stagger}
-          setStagger={setStagger}
-          easing={easing}
-          setEasing={setEasing}
-          cmykSplit={cmykSplit}
-          setCmykSplit={setCmykSplit}
-          softStart={softStart}
-          setSoftStart={setSoftStart}
-          softEnd={softEnd}
-          setSoftEnd={setSoftEnd}
-          stackDelay={stackDelay}
-          setStackDelay={setStackDelay}
-          stackDuration={stackDuration}
-          setStackDuration={setStackDuration}
-          stackStagger={stackStagger}
-          setStackStagger={setStackStagger}
-          pinViewports={pinViewports}
-          setPinViewports={setPinViewports}
-          exitRotation={exitRotation}
-          setExitRotation={setExitRotation}
-          halftone={halftone}
-          setHalftone={setHalftone}
-          halftoneDuration={halftoneDuration}
-          setHalftoneDuration={setHalftoneDuration}
-          onReplay={replay}
-          onReset={reset}
-        />
-      )}
-    </section>
+          ))}
+        </div>
+        <div
+          key={`cta-${replayKey}`}
+          className="sync-fade-in absolute bottom-24 flex w-full flex-col items-center justify-center gap-4"
+        >
+          <p className="max-w-md text-center font-mono">
+            Human-first AI for brands and creators who{" "}
+            <mark className="marker">refuse to fake it</mark>. Be the first to
+            step inside.
+          </p>
+          <WaitlistInput />
+        </div>
+        {showController && (
+          <HeroAnimationController
+            delay={delay}
+            setDelay={setDelay}
+            duration={duration}
+            setDuration={setDuration}
+            stagger={stagger}
+            setStagger={setStagger}
+            easing={easing}
+            setEasing={setEasing}
+            cmykSplit={cmykSplit}
+            setCmykSplit={setCmykSplit}
+            softStart={softStart}
+            setSoftStart={setSoftStart}
+            softEnd={softEnd}
+            setSoftEnd={setSoftEnd}
+            stackDelay={stackDelay}
+            setStackDelay={setStackDelay}
+            stackDuration={stackDuration}
+            setStackDuration={setStackDuration}
+            stackStagger={stackStagger}
+            setStackStagger={setStackStagger}
+            exitRotation={exitRotation}
+            setExitRotation={setExitRotation}
+            peelEase={peelEase}
+            setPeelEase={setPeelEase}
+            onReplay={replay}
+            onReset={reset}
+          />
+        )}
+      </section>
     </div>
   );
 };

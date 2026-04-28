@@ -27,9 +27,67 @@ const inconsolata = Inconsolata({
   subsets: ["latin"],
 });
 
+// Update SITE_URL to match the deployed origin so OG/canonical URLs resolve correctly.
+const SITE_URL = "https://www.uare.ai";
+const SITE_NAME = "Uare.ai";
+const SITE_TAGLINE = "Authentic over Artificial";
+const SITE_DESCRIPTION =
+  "Human-first AI for brands and creators who refuse to fake it. Join the Uare.ai waitlist — Issue 01, April 2026.";
+
 export const metadata: Metadata = {
-  title: "Uare.ai",
-  description: "Uare.ai — join the waitlist",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    template: `%s · ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  authors: [{ name: SITE_NAME, url: SITE_URL }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  keywords: [
+    "Uare.ai",
+    "human-first AI",
+    "AI for brands",
+    "AI for creators",
+    "authentic AI",
+    "AI waitlist",
+    "personal AI",
+  ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+    creator: "@uareai",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  category: "technology",
 };
 
 export default function RootLayout({
