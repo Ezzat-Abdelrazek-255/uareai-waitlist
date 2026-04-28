@@ -6,6 +6,7 @@ import AmbientSoundToggle from "@/components/ambient-sound-toggle";
 import Header from "@/components/header";
 import IssueTicker from "@/components/issue-ticker";
 import NoiseOverlay from "@/components/noise-overlay";
+import ScrollNotice from "@/components/scroll-notice";
 import SmoothScroll from "@/components/smooth-scroll";
 import TextureOverlay from "@/components/texture-overlay";
 
@@ -109,6 +110,7 @@ export default function RootLayout({
           <TextureOverlay />
           <NoiseOverlay />
           <AmbientSoundToggle />
+          <ScrollNotice />
         </SmoothScroll>
       </body>
     </html>

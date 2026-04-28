@@ -328,3 +328,33 @@ mark.marker {
   }
 }
 
+@keyframes scroll-notice-dot {
+  0% {
+    transform: translate(-50%, -100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, 100%);
+    opacity: 0;
+  }
+}
+
+.scroll-notice-dot {
+  top: 0;
+  animation: scroll-notice-dot 1.8s var(--ease-smooth) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-notice-dot {
+    animation: none;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
