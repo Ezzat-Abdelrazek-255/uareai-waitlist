@@ -1,5 +1,15 @@
 import type { Metadata } from "next";
-import { Source_Serif_4, Inconsolata } from "next/font/google";
+import {
+  Anton,
+  Archivo_Black,
+  Bebas_Neue,
+  DM_Serif_Display,
+  Fraunces,
+  Inconsolata,
+  Oswald,
+  Playfair_Display,
+  Source_Serif_4,
+} from "next/font/google";
 import localFont from "next/font/local";
 import "@/styles/css/index.css";
 import AmbientSoundToggle from "@/components/ambient-sound-toggle";
@@ -27,6 +37,51 @@ const sourceSerif4 = Source_Serif_4({
 const inconsolata = Inconsolata({
   variable: "--font-inconsolata",
   subsets: ["latin"],
+});
+
+// Heading-only alternates exposed via the dev controller. Each one is loaded
+// at the single weight the heading actually renders at — keeps the bundle
+// lean and avoids browser-simulated bolding on non-variable fonts.
+const bebasNeue = Bebas_Neue({
+  variable: "--font-bebas-neue",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const oswald = Oswald({
+  variable: "--font-oswald",
+  subsets: ["latin"],
+  weight: "600",
+});
+
+const anton = Anton({
+  variable: "--font-anton",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const archivoBlack = Archivo_Black({
+  variable: "--font-archivo-black",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const playfairDisplay = Playfair_Display({
+  variable: "--font-playfair-display",
+  subsets: ["latin"],
+  weight: "800",
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  weight: "700",
+});
+
+const dmSerifDisplay = DM_Serif_Display({
+  variable: "--font-dm-serif-display",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 // Update SITE_URL to match the deployed origin so OG/canonical URLs resolve correctly.
@@ -100,7 +155,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${futura.variable} ${sourceSerif4.variable} ${inconsolata.variable} uareai h-full antialiased`}
+      className={`${futura.variable} ${sourceSerif4.variable} ${inconsolata.variable} ${bebasNeue.variable} ${oswald.variable} ${anton.variable} ${archivoBlack.variable} ${playfairDisplay.variable} ${fraunces.variable} ${dmSerifDisplay.variable} uareai h-full antialiased`}
     >
       <body className="relative z-0 flex min-h-full flex-col font-sans">
         <SmoothScroll>

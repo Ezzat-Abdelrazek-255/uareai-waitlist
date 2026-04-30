@@ -28,12 +28,29 @@ const STACK = [
 // scroll range so every peeling image gets exactly 100vh of scroll.
 const PEEL_COUNT = STACK.length - 1;
 
+// Heading font alternates exposed via the dev controller. `varName` is the
+// CSS variable injected by next/font in app/layout.tsx; `weight` is the
+// single weight that font was actually loaded at — applied inline so the
+// h1's `font-black` utility doesn't trigger browser-simulated bolding.
+export const HEADING_FONTS = [
+  { key: "futura", label: "Futura Extra Bold", varName: "--font-futura", weight: 800 },
+  { key: "bebas", label: "Bebas Neue", varName: "--font-bebas-neue", weight: 400 },
+  { key: "oswald", label: "Oswald", varName: "--font-oswald", weight: 600 },
+  { key: "anton", label: "Anton", varName: "--font-anton", weight: 400 },
+  { key: "archivo-black", label: "Archivo Black", varName: "--font-archivo-black", weight: 400 },
+  { key: "playfair", label: "Playfair Display", varName: "--font-playfair-display", weight: 800 },
+  { key: "fraunces", label: "Fraunces", varName: "--font-fraunces", weight: 700 },
+  { key: "dm-serif", label: "DM Serif Display", varName: "--font-dm-serif-display", weight: 400 },
+] as const;
+
+export type HeadingFontKey = (typeof HEADING_FONTS)[number]["key"];
+
 const DEFAULTS = {
   delay: 200,
   duration: 2150,
   stagger: 250,
   easing: "--ease-smooth",
-  cmykSplit: true,
+  cmykSplit: false,
   softStart: 33.3,
   softEnd: 66.6,
   stackDelay: -1500,
@@ -41,6 +58,7 @@ const DEFAULTS = {
   stackStagger: 150,
   exitRotation: 25,
   peelEase: "power2.in",
+  headingFont: "futura" as HeadingFontKey,
 };
 
 const HeroSection = () => {
@@ -60,6 +78,12 @@ const HeroSection = () => {
   const pinViewports = PEEL_COUNT;
   const [exitRotation, setExitRotation] = useState(DEFAULTS.exitRotation);
   const [peelEase, setPeelEase] = useState(DEFAULTS.peelEase);
+  const [headingFont, setHeadingFont] = useState<HeadingFontKey>(
+    DEFAULTS.headingFont,
+  );
+
+  const headingFontConfig =
+    HEADING_FONTS.find((f) => f.key === headingFont) ?? HEADING_FONTS[0];
 
   // Becomes true after the CSS intro finishes — gates GSAP/ScrollTrigger init
   // and Lenis start. Stays true after the first transition.
@@ -68,6 +92,7 @@ const HeroSection = () => {
   const stageRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const stackRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const waitlistRef = useRef<HTMLDivElement>(null);
 
   const lenis = useLenis();
 
@@ -157,6 +182,12 @@ const HeroSection = () => {
 
       gsap.set(peelTargets, { x: 0, y: 0, rotation: 0 });
 
+      // Threshold is the moment the last image finishes peeling — before the
+      // 100vh hold tail. Crossing it lights the CTA + drops the cursor in.
+      const peelDoneAt = PEEL_COUNT / (PEEL_COUNT + 1);
+      let highlighted = false;
+      let didAutoFocus = false;
+
       // Sticky-driven scrub. We deliberately do NOT use ScrollTrigger's `pin: true`
       // because it re-parents the trigger into a pin-spacer div, which restarts
       // every CSS animation on the section's children when the pin first engages.
@@ -170,6 +201,25 @@ const HeroSection = () => {
           end: "bottom bottom",
           scrub: 0.5,
           invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            const should = self.progress >= peelDoneAt;
+            if (should === highlighted) return;
+            highlighted = should;
+            waitlistRef.current?.classList.toggle("is-highlighted", should);
+            if (should && !didAutoFocus) {
+              didAutoFocus = true;
+              // preventScroll keeps the scrub timeline at its current progress —
+              // browsers otherwise scroll a focused input into view.
+              window.setTimeout(() => {
+                const input = waitlistRef.current?.querySelector<HTMLInputElement>(
+                  'input[type="email"]',
+                );
+                if (input && document.activeElement === document.body) {
+                  input.focus({ preventScroll: true });
+                }
+              }, 700);
+            }
+          },
         },
       });
 
@@ -232,6 +282,7 @@ const HeroSection = () => {
     setStackStagger(DEFAULTS.stackStagger);
     setExitRotation(DEFAULTS.exitRotation);
     setPeelEase(DEFAULTS.peelEase);
+    setHeadingFont(DEFAULTS.headingFont);
     setReplayKey((k) => k + 1);
   };
 
@@ -261,6 +312,10 @@ const HeroSection = () => {
         </div>
         <h1
           className={`${cmykSplit ? "cmyk-split" : ""} text-[min(6vw,74px)] leading-none font-black uppercase`}
+          style={{
+            fontFamily: `var(${headingFontConfig.varName})`,
+            fontWeight: headingFontConfig.weight,
+          }}
         >
           <div key={`l1-${replayKey}`} data-line="1" className="hero-reveal">
             <div className="gap-spread flex justify-center">
@@ -324,7 +379,8 @@ const HeroSection = () => {
         </div>
         <div
           key={`cta-${replayKey}`}
-          className="sync-fade-in absolute bottom-24 flex w-full flex-col items-center justify-center gap-4"
+          ref={waitlistRef}
+          className="waitlist-cta sync-fade-in absolute bottom-24 flex w-full flex-col items-center justify-center gap-4"
         >
           <p className="max-w-md text-center font-mono">
             Human-first AI for brands and creators who{" "}
@@ -359,6 +415,8 @@ const HeroSection = () => {
             setExitRotation={setExitRotation}
             peelEase={peelEase}
             setPeelEase={setPeelEase}
+            headingFont={headingFont}
+            setHeadingFont={setHeadingFont}
             onReplay={replay}
             onReset={reset}
           />

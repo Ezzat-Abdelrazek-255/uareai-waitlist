@@ -32,6 +32,8 @@ const buildWavePath = (amp: number, freq: number, phase: number) => {
   return d;
 };
 
+const INITIAL_PATH = buildWavePath(OFF_AMP, OFF_FREQ, 0);
+
 const AmbientSoundToggle = () => {
   const [on, setOn] = useState(false);
   const [ready, setReady] = useState(false);
@@ -66,7 +68,7 @@ const AmbientSoundToggle = () => {
     const startTime = performance.now();
 
     const tick = (now: number) => {
-      const t = Math.min(1, (now - startTime) / FADE_MS);
+      const t = Math.max(0, Math.min(1, (now - startTime) / FADE_MS));
       audio.volume = start + (target - start) * t;
       if (t < 1) {
         fadeRafRef.current = requestAnimationFrame(tick);
@@ -175,7 +177,7 @@ const AmbientSoundToggle = () => {
         strokeLinejoin="round"
         aria-hidden="true"
       >
-        <path ref={pathRef} />
+        <path ref={pathRef} d={INITIAL_PATH} />
       </svg>
     </button>
   );

@@ -358,3 +358,57 @@ mark.marker {
   }
 }
 
+/* ---------------------------------------------------------------- *
+ * Waitlist next-step highlight
+ *
+ * Class toggled from the hero scrub ScrollTrigger when the peel
+ * finishes. Border picks up --accent, a quick scale-punch lands the
+ * entrance, and a soft glow breathes until the user focuses in
+ * (auto-focus fires ~700ms after the threshold cross).
+ * ---------------------------------------------------------------- */
+
+.waitlist-cta form {
+  transition: border-color 320ms var(--ease-smooth);
+}
+
+.waitlist-cta.is-highlighted form {
+  border-color: var(--accent);
+  animation:
+    waitlist-stamp 520ms var(--ease-back-out) both,
+    waitlist-glow 2400ms var(--ease-smooth) 520ms infinite;
+}
+
+.waitlist-cta.is-highlighted form:focus-within {
+  animation: waitlist-stamp 520ms var(--ease-back-out) both;
+  box-shadow: none;
+}
+
+@keyframes waitlist-stamp {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.035);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes waitlist-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 24px 6px color-mix(in oklab, var(--accent) 0%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waitlist-cta.is-highlighted form {
+    animation: none;
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+}
+
