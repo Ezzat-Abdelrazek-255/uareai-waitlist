@@ -286,7 +286,8 @@ const HeroSection = () => {
     setReplayKey((k) => k + 1);
   };
 
-  const showController = process.env.NODE_ENV !== "production";
+  // Shown in production too so the client can tweak the intro on the live site.
+  const showController = true;
 
   // Stage height: section (1 viewport) + image-peel scroll (pinViewports) + hold (1).
   // Sticky range = stageHeight - sectionHeight = (pinViewports + 1) * 100vh.
