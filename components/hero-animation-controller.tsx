@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { HEADING_FONTS, type HeadingFontKey } from "./hero-section";
+import {
+  HEADING_FONTS,
+  STACK_FOLDERS,
+  type HeadingFontKey,
+  type StackFolderKey,
+} from "./hero-section";
 
 const STORAGE_KEY = "hero-animation-controller:minimized";
 
@@ -77,6 +82,8 @@ type Props = {
   setPeelEase: (v: string) => void;
   headingFont: HeadingFontKey;
   setHeadingFont: (v: HeadingFontKey) => void;
+  imageFolder: StackFolderKey;
+  setImageFolder: (v: StackFolderKey) => void;
   onReplay: () => void;
   onReset: () => void;
 };
@@ -182,6 +189,8 @@ const HeroAnimationController = ({
   setPeelEase,
   headingFont,
   setHeadingFont,
+  imageFolder,
+  setImageFolder,
   onReplay,
   onReset,
 }: Props) => {
@@ -203,6 +212,8 @@ const HeroAnimationController = ({
     PEEL_EASES.find((p) => p.value === peelEase)?.label ?? peelEase;
   const headingFontLabel =
     HEADING_FONTS.find((f) => f.key === headingFont)?.label ?? headingFont;
+  const imageFolderLabel =
+    STACK_FOLDERS.find((f) => f.key === imageFolder)?.label ?? imageFolder;
 
   if (minimized) {
     return (
@@ -399,6 +410,24 @@ const HeroAnimationController = ({
         title="Image stack drop"
         description="Photos that fall in behind the headline like a stack of polaroids."
       >
+        <Row
+          label="Image set"
+          value={imageFolderLabel}
+          hint="Which folder under /public the stack pulls images from. Each folder contains numbered files (0.png, 1.png, …)."
+        >
+          <select
+            value={imageFolder}
+            onChange={(e) => setImageFolder(e.target.value as StackFolderKey)}
+            className="rounded-sm border border-[var(--border)] bg-transparent px-1 py-1 text-xs"
+          >
+            {STACK_FOLDERS.map((f) => (
+              <option key={f.key} value={f.key}>
+                {f.label}
+              </option>
+            ))}
+          </select>
+        </Row>
+
         <Row
           label="Drop speed"
           value={`${stackDuration}ms`}

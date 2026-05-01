@@ -14,20 +14,47 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, useGSAP);
 }
 
-const STACK = [
-  { src: "/images/2.png", rotate: "3deg", width: 2362, height: 2597 },
-  { src: "/images/0.png", rotate: "0deg", width: 2371, height: 2606 },
-  { src: "/images/1.png", rotate: "-4deg", width: 2225, height: 2439 },
-  { src: "/images/0.png", rotate: "0deg", width: 2371, height: 2606 },
-  { src: "/images/1.png", rotate: "-4deg", width: 2225, height: 2439 },
-  { src: "/images/0.png", rotate: "0deg", width: 2371, height: 2606 },
-];
+// Six-slot recipe used by every folder. Rotates are kept fixed so the visual
+// composition stays consistent across folders; the image index per slot is
+// derived from the folder size at render time so we only repeat when a
+// folder has fewer images than slots.
+const STACK_ROTATES = ["3deg", "0deg", "-4deg", "0deg", "-4deg", "0deg"];
+
+// Image folders the user can switch between in the controller. Each folder
+// holds files named `{idx}.png` starting at 0; `dims` is intrinsic size per
+// index, used by next/image for aspect reservation.
+export const STACK_FOLDERS = [
+  {
+    key: "originals",
+    label: "Originals",
+    path: "/originals",
+    dims: [
+      { width: 2371, height: 2606 },
+      { width: 2225, height: 2439 },
+      { width: 2362, height: 2597 },
+    ],
+  },
+  {
+    key: "parloa",
+    label: "Parloa",
+    path: "/parloa",
+    dims: Array.from({ length: 7 }, () => ({ width: 928, height: 1140 })),
+  },
+  {
+    key: "others",
+    label: "Others",
+    path: "/others",
+    dims: Array.from({ length: 10 }, () => ({ width: 928, height: 1140 })),
+  },
+] as const;
+
+export type StackFolderKey = (typeof STACK_FOLDERS)[number]["key"];
 
 // Peel count = number of images that scroll-out. Every image peels (including
 // the bottom-most one) so the final scrub frame is empty behind the heading.
 // Used to derive the pin scroll range so every peeling image gets exactly
 // 100vh of scroll.
-const PEEL_COUNT = STACK.length;
+const PEEL_COUNT = STACK_ROTATES.length;
 
 // Heading font alternates exposed via the dev controller. `varName` is the
 // CSS variable injected by next/font in app/layout.tsx; `weight` is the
@@ -90,6 +117,7 @@ const DEFAULTS = {
   exitRotation: 25,
   peelEase: "power2.in",
   headingFont: "futura" as HeadingFontKey,
+  imageFolder: "originals" as StackFolderKey,
 };
 
 const HeroSection = () => {
@@ -112,9 +140,38 @@ const HeroSection = () => {
   const [headingFont, setHeadingFont] = useState<HeadingFontKey>(
     DEFAULTS.headingFont,
   );
+  const [imageFolder, setImageFolder] = useState<StackFolderKey>(
+    DEFAULTS.imageFolder,
+  );
 
   const headingFontConfig =
     HEADING_FONTS.find((f) => f.key === headingFont) ?? HEADING_FONTS[0];
+
+  const folderConfig =
+    STACK_FOLDERS.find((f) => f.key === imageFolder) ?? STACK_FOLDERS[0];
+  // Bottom-most slot (slot 0, lowest z, peels last) is pinned to the final
+  // originals image so every folder shares the same anchor frame.
+  const originals = STACK_FOLDERS[0];
+  const anchorIdx = originals.dims.length - 1;
+  const anchorDim = originals.dims[anchorIdx];
+  const STACK = STACK_ROTATES.map((rotate, slot) => {
+    if (slot === 0) {
+      return {
+        src: `${originals.path}/${anchorIdx}.png`,
+        rotate,
+        width: anchorDim.width,
+        height: anchorDim.height,
+      };
+    }
+    const idx = (slot - 1) % folderConfig.dims.length;
+    const dim = folderConfig.dims[idx];
+    return {
+      src: `${folderConfig.path}/${idx}.png`,
+      rotate,
+      width: dim.width,
+      height: dim.height,
+    };
+  });
 
   // Becomes true after the CSS intro finishes — gates GSAP/ScrollTrigger init
   // and Lenis start. Stays true after the first transition.
@@ -333,6 +390,7 @@ const HeroSection = () => {
     setExitRotation(DEFAULTS.exitRotation);
     setPeelEase(DEFAULTS.peelEase);
     setHeadingFont(DEFAULTS.headingFont);
+    setImageFolder(DEFAULTS.imageFolder);
     setReplayKey((k) => k + 1);
   };
 
@@ -401,7 +459,7 @@ const HeroSection = () => {
         </div>
         <div
           ref={waitlistRef}
-          className="waitlist-cta absolute bottom-24 w-full"
+          className="waitlist-cta absolute bottom-16 w-full"
         >
           <div
             key={`cta-${replayKey}`}
@@ -473,6 +531,8 @@ const HeroSection = () => {
             setPeelEase={setPeelEase}
             headingFont={headingFont}
             setHeadingFont={setHeadingFont}
+            imageFolder={imageFolder}
+            setImageFolder={setImageFolder}
             onReplay={replay}
             onReset={reset}
           />
