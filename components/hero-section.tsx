@@ -401,7 +401,7 @@ const HeroSection = () => {
         </div>
         <div
           ref={waitlistRef}
-          className="waitlist-cta absolute bottom-20 w-full"
+          className="waitlist-cta absolute bottom-24 w-full"
         >
           <div
             key={`cta-${replayKey}`}
@@ -414,7 +414,11 @@ const HeroSection = () => {
                 fontWeight: headingFontConfig.weight,
               }}
             >
-              <div key={`l1-${replayKey}`} data-line="1" className="hero-reveal">
+              <div
+                key={`l1-${replayKey}`}
+                data-line="1"
+                className="hero-reveal"
+              >
                 <div className="flex justify-center gap-4">
                   <div className="flex items-baseline gap-3">
                     <UMark className="h-[0.8em] w-auto" />
@@ -425,7 +429,11 @@ const HeroSection = () => {
                   </div>
                 </div>
               </div>
-              <div key={`l2-${replayKey}`} data-line="2" className="hero-reveal">
+              <div
+                key={`l2-${replayKey}`}
+                data-line="2"
+                className="hero-reveal"
+              >
                 <div className="flex justify-center gap-4">
                   <div>Authentic</div>
                   <div className="relative">
