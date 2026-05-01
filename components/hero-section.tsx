@@ -23,24 +23,55 @@ const STACK = [
   { src: "/images/0.png", rotate: "0deg", width: 2371, height: 2606 },
 ];
 
-// Peel count = number of images that scroll-out (everything except the
-// bottom-most image which stays as the anchor). Used to derive the pin
-// scroll range so every peeling image gets exactly 100vh of scroll.
-const PEEL_COUNT = STACK.length - 1;
+// Peel count = number of images that scroll-out. Every image peels (including
+// the bottom-most one) so the final scrub frame is empty behind the heading.
+// Used to derive the pin scroll range so every peeling image gets exactly
+// 100vh of scroll.
+const PEEL_COUNT = STACK.length;
 
 // Heading font alternates exposed via the dev controller. `varName` is the
 // CSS variable injected by next/font in app/layout.tsx; `weight` is the
 // single weight that font was actually loaded at — applied inline so the
 // h1's `font-black` utility doesn't trigger browser-simulated bolding.
 export const HEADING_FONTS = [
-  { key: "futura", label: "Futura Extra Bold", varName: "--font-futura", weight: 800 },
-  { key: "bebas", label: "Bebas Neue", varName: "--font-bebas-neue", weight: 400 },
+  {
+    key: "futura",
+    label: "Futura Extra Bold",
+    varName: "--font-futura",
+    weight: 800,
+  },
+  {
+    key: "bebas",
+    label: "Bebas Neue",
+    varName: "--font-bebas-neue",
+    weight: 400,
+  },
   { key: "oswald", label: "Oswald", varName: "--font-oswald", weight: 600 },
   { key: "anton", label: "Anton", varName: "--font-anton", weight: 400 },
-  { key: "archivo-black", label: "Archivo Black", varName: "--font-archivo-black", weight: 400 },
-  { key: "playfair", label: "Playfair Display", varName: "--font-playfair-display", weight: 800 },
-  { key: "fraunces", label: "Fraunces", varName: "--font-fraunces", weight: 700 },
-  { key: "dm-serif", label: "DM Serif Display", varName: "--font-dm-serif-display", weight: 400 },
+  {
+    key: "archivo-black",
+    label: "Archivo Black",
+    varName: "--font-archivo-black",
+    weight: 400,
+  },
+  {
+    key: "playfair",
+    label: "Playfair Display",
+    varName: "--font-playfair-display",
+    weight: 800,
+  },
+  {
+    key: "fraunces",
+    label: "Fraunces",
+    varName: "--font-fraunces",
+    weight: 700,
+  },
+  {
+    key: "dm-serif",
+    label: "DM Serif Display",
+    varName: "--font-dm-serif-display",
+    weight: 400,
+  },
 ] as const;
 
 export type HeadingFontKey = (typeof HEADING_FONTS)[number]["key"];
@@ -171,16 +202,16 @@ const HeroSection = () => {
       if (typeof window === "undefined") return;
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-      // Peel every image except the bottom one (index 0 — stays as the
-      // anchor). Order them top-of-stack first so the visually-frontmost
-      // image leaves first.
+      // Peel every image, top-of-stack first so the visually-frontmost image
+      // leaves first and the anchor (bottom-most) leaves last.
       const peelTargets = stackRefs.current
-        .slice(1)
         .filter((el): el is HTMLDivElement => el !== null)
         .reverse();
       if (peelTargets.length === 0) return;
 
       gsap.set(peelTargets, { x: 0, y: 0, rotation: 0 });
+      const wlEl = waitlistRef.current;
+      if (wlEl) gsap.set(wlEl, { y: 0 });
 
       // Threshold is the moment the last image finishes peeling — before the
       // 100vh hold tail. Crossing it lights the CTA + drops the cursor in.
@@ -211,9 +242,10 @@ const HeroSection = () => {
               // preventScroll keeps the scrub timeline at its current progress —
               // browsers otherwise scroll a focused input into view.
               window.setTimeout(() => {
-                const input = waitlistRef.current?.querySelector<HTMLInputElement>(
-                  'input[type="email"]',
-                );
+                const input =
+                  waitlistRef.current?.querySelector<HTMLInputElement>(
+                    'input[type="email"]',
+                  );
                 if (input && document.activeElement === document.body) {
                   input.focus({ preventScroll: true });
                 }
@@ -244,11 +276,29 @@ const HeroSection = () => {
         );
       });
 
-      // Hold tween keeps the proportion peel : hold = pinViewports : 1, so the
-      // last 100vh of pin range is dead time regardless of how many images peel.
-      // Total timeline = N (peel) + N/pinViewports (hold). Peel/total =
-      // pinViewports/(pinViewports + 1) → maps peel onto pinViewports vh of scroll.
-      tl.to({}, { duration: peelTargets.length / pinViewports });
+      // Lift the waitlist CTA upward across the last peel slot + the hold slot.
+      // Replaces the prior empty-hold tween — total timeline length is unchanged
+      // (peelTargets.length - 1 + (1 + peelTargets.length / pinViewports) =
+      // peelTargets.length + peelTargets.length / pinViewports), so peelDoneAt
+      // and the sticky scroll range stay correct. offsetTop / offsetHeight are
+      // transform-agnostic, so the function re-evaluates correctly on refresh
+      // regardless of the wrapper's current transform.
+      const liftDuration = 1 + peelTargets.length / pinViewports;
+      const liftStart = peelTargets.length - 1;
+      tl.to(
+        wlEl,
+        {
+          y: () => {
+            const el = waitlistRef.current;
+            if (!el) return 0;
+            const naturalCenter = el.offsetTop + el.offsetHeight / 2;
+            return window.innerHeight / 2 - naturalCenter;
+          },
+          duration: liftDuration,
+          ease: "power2.out",
+        },
+        liftStart,
+      );
     },
     {
       scope: sectionRef,
@@ -311,35 +361,6 @@ const HeroSection = () => {
           <span>Waitlist · Issue 01 · Apr 2026</span>
           <span className="bg-foreground/30 h-px flex-1" aria-hidden />
         </div>
-        <h1
-          className={`${cmykSplit ? "cmyk-split" : ""} text-[min(6vw,74px)] leading-none font-black uppercase`}
-          style={{
-            fontFamily: `var(${headingFontConfig.varName})`,
-            fontWeight: headingFontConfig.weight,
-          }}
-        >
-          <div key={`l1-${replayKey}`} data-line="1" className="hero-reveal">
-            <div className="gap-spread flex justify-center">
-              <div className="flex items-baseline gap-3">
-                <UMark className="h-[0.8em] w-auto" />
-                <div>are</div>
-              </div>
-              <div className="relative flex items-baseline gap-3">
-                <UMark className="h-[0.8em] w-auto opacity-0" />
-                <div className="opacity-0">are</div>
-                <em className="absolute">AI</em>
-              </div>
-            </div>
-          </div>
-          <div key={`l2-${replayKey}`} data-line="2" className="hero-reveal">
-            <div className="gap-spread flex justify-center">
-              <div>Authentic</div>
-              <div className="relative">
-                <div className="line-through">Artificial</div>
-              </div>
-            </div>
-          </div>
-        </h1>
         {/* aspect-ratio + explicit -translate-x/y-1/2 keep the stack visually
             centered. The shorthand -translate-1/2 only sets one axis in
             Tailwind v4 — fine when the container collapsed to 0 height,
@@ -379,16 +400,42 @@ const HeroSection = () => {
           ))}
         </div>
         <div
-          key={`cta-${replayKey}`}
           ref={waitlistRef}
-          className="waitlist-cta sync-fade-in absolute bottom-24 flex w-full flex-col items-center justify-center gap-4"
+          className="waitlist-cta absolute bottom-20 w-full"
         >
-          <p className="max-w-md text-center font-mono">
-            Human-first AI for brands and creators who{" "}
-            <mark className="marker">refuse to fake it</mark>. Be the first to
-            step inside.
-          </p>
-          <WaitlistInput />
+          <div
+            key={`cta-${replayKey}`}
+            className="sync-fade-in flex w-full flex-col items-center justify-center gap-4"
+          >
+            <h1
+              className={`${cmykSplit ? "cmyk-split" : ""} text-[min(6vw,74px)] leading-none font-black uppercase`}
+              style={{
+                fontFamily: `var(${headingFontConfig.varName})`,
+                fontWeight: headingFontConfig.weight,
+              }}
+            >
+              <div key={`l1-${replayKey}`} data-line="1" className="hero-reveal">
+                <div className="flex justify-center gap-4">
+                  <div className="flex items-baseline gap-3">
+                    <UMark className="h-[0.8em] w-auto" />
+                    <div>are</div>
+                  </div>
+                  <div>
+                    <em>AI</em>
+                  </div>
+                </div>
+              </div>
+              <div key={`l2-${replayKey}`} data-line="2" className="hero-reveal">
+                <div className="flex justify-center gap-4">
+                  <div>Authentic</div>
+                  <div className="relative">
+                    <div className="line-through">Artificial</div>
+                  </div>
+                </div>
+              </div>
+            </h1>
+            <WaitlistInput />
+          </div>
         </div>
         {showController && (
           <HeroAnimationController
