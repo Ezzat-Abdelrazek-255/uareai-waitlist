@@ -43,8 +43,10 @@ const WaitlistInput = () => {
           className="bg-foreground text-background flex h-full shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-mono disabled:opacity-60 md:gap-2 md:text-sm"
         >
           <UMark className="h-[0.9em] w-auto" />
-          {isPending ? "Joining…" : "Join"}
-          <span className="hidden md:inline">&nbsp;waitlist</span>
+          <span>
+            {isPending ? "Joining…" : "Join"}
+            <span className="hidden md:inline">&nbsp;waitlist</span>
+          </span>
         </button>
       </form>
       {state.status === "error" && (

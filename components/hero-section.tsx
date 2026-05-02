@@ -23,11 +23,17 @@ const STACK_ROTATES = ["3deg", "0deg", "-4deg", "0deg", "-4deg", "0deg"];
 // Image folders the user can switch between in the controller. Each folder
 // holds files named `{idx}.png` starting at 0; `dims` is intrinsic size per
 // index, used by next/image for aspect reservation.
+//
+// `selfAnchor: true` means slot 0 (the bottom-most card, peels last) is filled
+// from this folder's own last image. When false, slot 0 falls back to the
+// shared cross-folder anchor (originals[last] = the Be Yourself frame), so
+// folders that lack a final-card image of their own still get one.
 export const STACK_FOLDERS = [
   {
     key: "originals",
     label: "Originals",
     path: "/originals",
+    selfAnchor: true,
     dims: [
       { width: 2371, height: 2606 },
       { width: 2225, height: 2439 },
@@ -35,15 +41,24 @@ export const STACK_FOLDERS = [
     ],
   },
   {
+    key: "originals-2",
+    label: "Originals 2",
+    path: "/originals-2",
+    selfAnchor: true,
+    dims: Array.from({ length: 6 }, () => ({ width: 976, height: 1095 })),
+  },
+  {
     key: "parloa",
     label: "Parloa",
     path: "/parloa",
+    selfAnchor: false,
     dims: Array.from({ length: 7 }, () => ({ width: 928, height: 1140 })),
   },
   {
     key: "others",
     label: "Others",
     path: "/others",
+    selfAnchor: false,
     dims: Array.from({ length: 10 }, () => ({ width: 928, height: 1140 })),
   },
 ] as const;
@@ -137,7 +152,7 @@ const DEFAULTS = {
   peelScrollPerImage: 150,
   headingFont: "plus-jakarta-sans" as HeadingFontKey,
   headingCase: "uppercase" as HeadingCaseKey,
-  imageFolder: "originals" as StackFolderKey,
+  imageFolder: "originals-2" as StackFolderKey,
 };
 
 const HeroSection = () => {
@@ -177,21 +192,26 @@ const HeroSection = () => {
 
   const folderConfig =
     STACK_FOLDERS.find((f) => f.key === imageFolder) ?? STACK_FOLDERS[0];
-  // Bottom-most slot (slot 0, lowest z, peels last) is pinned to the final
-  // originals image so every folder shares the same anchor frame.
-  const originals = STACK_FOLDERS[0];
-  const anchorIdx = originals.dims.length - 1;
-  const anchorDim = originals.dims[anchorIdx];
+  // Slot 0 is the bottom-most card (peels last). Folders with `selfAnchor`
+  // supply their own final card from their last image; folders without it
+  // borrow the shared anchor from STACK_FOLDERS[0] (the original deck) so
+  // the stack always ends on a Be Yourself frame.
+  const sharedAnchor = STACK_FOLDERS[0];
+  const sharedAnchorIdx = sharedAnchor.dims.length - 1;
   const STACK = STACK_ROTATES.map((rotate, slot) => {
-    if (slot === 0) {
+    if (slot === 0 && !folderConfig.selfAnchor) {
+      const dim = sharedAnchor.dims[sharedAnchorIdx];
       return {
-        src: `${originals.path}/${anchorIdx}.png`,
+        src: `${sharedAnchor.path}/${sharedAnchorIdx}.png`,
         rotate,
-        width: anchorDim.width,
-        height: anchorDim.height,
+        width: dim.width,
+        height: dim.height,
       };
     }
-    const idx = (slot - 1) % folderConfig.dims.length;
+    const idx =
+      slot === 0
+        ? folderConfig.dims.length - 1
+        : (slot - 1) % folderConfig.dims.length;
     const dim = folderConfig.dims[idx];
     return {
       src: `${folderConfig.path}/${idx}.png`,
@@ -395,12 +415,13 @@ const HeroSection = () => {
         return;
       }
 
-      // Desktop-only from here. Reset the waitlist CTA's transform before the
-      // lift tween below; we deliberately skip this on mobile so GSAP never
-      // overrides the Tailwind `-translate-y-1/2` that anchors the CTA at
-      // `top-[72%]`.
+      // Desktop-only from here. Take ownership of the wrapper's transform
+      // before the lift tween. The CTA's CSS uses `-translate-y-1/2` on the
+      // `top-[calc(50%+18rem)]` anchor; once GSAP writes to `transform` it
+      // wipes that out, so we re-establish the half-height shift via
+      // `yPercent: -50`. Skipped on mobile so GSAP never touches that branch.
       const wlEl = waitlistRef.current;
-      if (wlEl) gsap.set(wlEl, { y: 0 });
+      if (wlEl) gsap.set(wlEl, { y: 0, yPercent: -50 });
 
       // Threshold is the moment the last image finishes peeling — before the
       // 100vh hold tail. Crossing it lights the CTA + drops the cursor in.
@@ -489,8 +510,10 @@ const HeroSection = () => {
           y: () => {
             const el = waitlistRef.current;
             if (!el) return 0;
-            const naturalCenter = el.offsetTop + el.offsetHeight / 2;
-            return window.innerHeight / 2 - naturalCenter;
+            // yPercent: -50 (set above) shifts the element up by half its own
+            // height, so its visual center sits at `offsetTop`, not
+            // `offsetTop + offsetHeight/2`.
+            return window.innerHeight / 2 - el.offsetTop;
           },
           duration: liftDuration,
           ease: "power2.out",
@@ -564,7 +587,7 @@ const HeroSection = () => {
       >
         <div
           key={`kicker-${replayKey}`}
-          className="stamp-impact absolute top-[10rem] left-1/2 hidden -translate-x-1/2 items-center justify-center gap-4 font-mono text-xs tracking-[0.3em] uppercase lg:flex"
+          className="stamp-impact absolute top-[calc(50%-18rem)] left-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-4 font-mono text-xs tracking-[0.3em] uppercase lg:flex"
         >
           <span
             className="bg-foreground/30 hidden h-px w-32 flex-1 lg:block"
@@ -584,7 +607,7 @@ const HeroSection = () => {
             centered. The shorthand -translate-1/2 only sets one axis in
             Tailwind v4 — fine when the container collapsed to 0 height,
             broken once the box has real dimensions. */}
-        <div className="absolute top-[40%] left-1/2 -z-10 aspect-[2371/2606] w-[min(75vw,460px)] -translate-x-1/2 -translate-y-1/2 md:w-[min(45vw,380px)] lg:top-1/2 lg:w-[min(30vw,368px)]">
+        <div className="absolute top-[40%] left-1/2 -z-10 aspect-[2371/2606] w-[min(80vw,510px)] -translate-x-1/2 -translate-y-1/2 md:w-[min(50vw,430px)] lg:top-1/2 lg:w-[min(33vw,415px)]">
           {STACK.map((item, i) => (
             // Outer wrapper: stable identity, holds GSAP ref. Never remounts on Replay.
             // Index is fine here — STACK is module-level static, never reordered.
@@ -614,6 +637,14 @@ const HeroSection = () => {
                   className="absolute inset-0 top-1/2 h-full w-full -translate-y-1/2 object-contain [filter:contrast(1.08)_saturate(0.85)_drop-shadow(0_12px_12px_rgba(0,0,0,0.05))] select-none"
                   style={{ transform: `rotate(${item.rotate})` }}
                 />
+                {/* Noise texture per card — same /texture.png used in the
+                    page background overlay, rotated with the image so the
+                    grain reads as part of the printed photo. */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 top-1/2 h-full w-full -translate-y-1/2 bg-[url(/texture.png)] bg-repeat opacity-50"
+                  style={{ transform: `rotate(${item.rotate})` }}
+                />
               </div>
             </div>
           ))}
@@ -628,14 +659,14 @@ const HeroSection = () => {
         />
         <div
           ref={waitlistRef}
-          className="waitlist-cta absolute top-[72%] w-full -translate-y-1/2 lg:top-auto lg:bottom-12 lg:translate-y-0"
+          className="waitlist-cta absolute top-[calc(50%+12rem)] w-full -translate-y-1/2 lg:top-[calc(50%+18rem)]"
         >
           <div
             key={`cta-${replayKey}`}
             className="sync-fade-in flex w-full flex-col items-center justify-center gap-4"
           >
             <h1
-              className={`${cmykSplit ? "cmyk-split" : ""} ${headingCaseConfig.className} text-[8vw] leading-none font-black lg:text-[min(6vw,74px)]`}
+              className={`${cmykSplit ? "cmyk-split" : ""} ${headingCaseConfig.className} text-[8vw] leading-none font-black lg:text-[min(5vw,74px)]`}
               style={{
                 fontFamily: `var(${headingFontConfig.varName})`,
                 fontWeight: headingFontConfig.weight,
