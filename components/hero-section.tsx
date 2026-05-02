@@ -628,7 +628,7 @@ const HeroSection = () => {
         />
         <div
           ref={waitlistRef}
-          className="waitlist-cta absolute top-[72%] w-full -translate-y-1/2 lg:top-auto lg:bottom-12 lg:translate-y-0"
+          className="waitlist-cta absolute top-[72%] w-full -translate-y-1/2 [@media(max-width:1023px)_and_(max-height:800px)]:top-[64%] lg:top-auto lg:bottom-12 lg:translate-y-0"
         >
           <div
             key={`cta-${replayKey}`}
