@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import {
+  HEADING_CASES,
   HEADING_FONTS,
   STACK_FOLDERS,
+  type HeadingCaseKey,
   type HeadingFontKey,
   type StackFolderKey,
 } from "./hero-section";
@@ -80,8 +82,12 @@ type Props = {
   setExitRotation: (v: number) => void;
   peelEase: string;
   setPeelEase: (v: string) => void;
+  peelScrollPerImage: number;
+  setPeelScrollPerImage: (v: number) => void;
   headingFont: HeadingFontKey;
   setHeadingFont: (v: HeadingFontKey) => void;
+  headingCase: HeadingCaseKey;
+  setHeadingCase: (v: HeadingCaseKey) => void;
   imageFolder: StackFolderKey;
   setImageFolder: (v: StackFolderKey) => void;
   onReplay: () => void;
@@ -187,8 +193,12 @@ const HeroAnimationController = ({
   setExitRotation,
   peelEase,
   setPeelEase,
+  peelScrollPerImage,
+  setPeelScrollPerImage,
   headingFont,
   setHeadingFont,
+  headingCase,
+  setHeadingCase,
   imageFolder,
   setImageFolder,
   onReplay,
@@ -212,6 +222,8 @@ const HeroAnimationController = ({
     PEEL_EASES.find((p) => p.value === peelEase)?.label ?? peelEase;
   const headingFontLabel =
     HEADING_FONTS.find((f) => f.key === headingFont)?.label ?? headingFont;
+  const headingCaseLabel =
+    HEADING_CASES.find((c) => c.key === headingCase)?.label ?? headingCase;
   const imageFolderLabel =
     STACK_FOLDERS.find((f) => f.key === imageFolder)?.label ?? imageFolder;
 
@@ -221,7 +233,7 @@ const HeroAnimationController = ({
         type="button"
         onClick={() => setMinimized(false)}
         aria-label="Open intro animation tweaks"
-        className="fixed right-4 bottom-4 z-50 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--color-background)]/80 px-3 py-2 font-mono text-[10px] tracking-[0.2em] uppercase opacity-80 shadow-lg backdrop-blur hover:opacity-100"
+        className="fixed right-4 bottom-20 z-50 rounded-full border border-[var(--border)] bg-[var(--color-background)]/80 px-3 py-2 font-mono text-[10px] tracking-[0.2em] uppercase opacity-80 shadow-lg backdrop-blur hover:opacity-100"
       >
         Intro tweaks ▴
       </button>
@@ -230,9 +242,10 @@ const HeroAnimationController = ({
 
   return (
     <div
-      className="fixed right-4 bottom-4 z-50 flex max-h-[calc(100dvh-2rem)] w-[300px] flex-col gap-3 overflow-y-auto rounded-[var(--radius)] border border-[var(--border)] bg-[var(--color-background)]/85 p-3 font-mono text-xs shadow-lg backdrop-blur"
+      className="fixed right-4 bottom-4 z-50 flex max-h-[calc(70dvh-2rem)] w-[300px] flex-col gap-3 overflow-y-auto overscroll-contain rounded-[var(--radius)] border border-[var(--border)] bg-[var(--color-background)]/85 p-3 font-mono text-xs shadow-lg backdrop-blur"
       role="region"
       aria-label="Intro animation tweaks"
+      data-lenis-prevent
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 flex-col gap-1">
@@ -290,6 +303,24 @@ const HeroAnimationController = ({
             {HEADING_FONTS.map((f) => (
               <option key={f.key} value={f.key}>
                 {f.label}
+              </option>
+            ))}
+          </select>
+        </Row>
+
+        <Row
+          label="Casing"
+          value={headingCaseLabel}
+          hint="Letter case applied to the headline. Uppercase reads loudest; capitalize and lowercase soften it."
+        >
+          <select
+            value={headingCase}
+            onChange={(e) => setHeadingCase(e.target.value as HeadingCaseKey)}
+            className="rounded-sm border border-[var(--border)] bg-transparent px-1 py-1 text-xs"
+          >
+            {HEADING_CASES.map((c) => (
+              <option key={c.key} value={c.key}>
+                {c.label}
               </option>
             ))}
           </select>
@@ -494,6 +525,21 @@ const HeroAnimationController = ({
               </option>
             ))}
           </select>
+        </Row>
+
+        <Row
+          label="Scroll per image"
+          value={`${peelScrollPerImage}vh`}
+          hint="How much page scroll each image takes to peel away. Higher = slower, more deliberate. Lower = faster, snappier."
+        >
+          <input
+            type="range"
+            min={25}
+            max={300}
+            step={25}
+            value={peelScrollPerImage}
+            onChange={(e) => setPeelScrollPerImage(Number(e.target.value))}
+          />
         </Row>
 
         <Row

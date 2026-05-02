@@ -358,31 +358,4 @@ mark.marker {
   }
 }
 
-/* ---------------------------------------------------------------- *
- * Waitlist next-step highlight
- *
- * Class toggled from the hero scrub ScrollTrigger when the peel
- * finishes. The form scales up and stays scaled, drawing the eye to
- * the input as the only thing left on screen.
- * ---------------------------------------------------------------- */
-
-.waitlist-cta.is-highlighted form {
-  animation: waitlist-stamp 400ms var(--ease-out-expo) both;
-}
-
-@keyframes waitlist-stamp {
-  0% {
-    transform: scale(1);
-  }
-  100% {
-    transform: scale(1.08);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .waitlist-cta.is-highlighted form {
-    animation: none;
-    transform: scale(1.08);
-  }
-}
 

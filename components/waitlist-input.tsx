@@ -1,9 +1,7 @@
 "use client";
 import { useActionState } from "react";
-import {
-  initialWaitlistState,
-  joinWaitlist,
-} from "@/app/actions/waitlist";
+import { joinWaitlist } from "@/app/actions/waitlist";
+import { initialWaitlistState } from "@/lib/waitlist-state";
 import UMark from "@/icons/u-mark";
 
 const WaitlistInput = () => {

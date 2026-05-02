@@ -8,6 +8,7 @@ import {
   Inconsolata,
   Oswald,
   Playfair_Display,
+  Plus_Jakarta_Sans,
   Source_Serif_4,
 } from "next/font/google";
 import localFont from "next/font/local";
@@ -84,6 +85,12 @@ const dmSerifDisplay = DM_Serif_Display({
   weight: "400",
 });
 
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta-sans",
+  subsets: ["latin"],
+  weight: "600",
+});
+
 // Update SITE_URL to match the deployed origin so OG/canonical URLs resolve correctly.
 const SITE_URL = "https://www.uare.ai";
 const SITE_NAME = "Uare.ai";
@@ -155,7 +162,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${futura.variable} ${sourceSerif4.variable} ${inconsolata.variable} ${bebasNeue.variable} ${oswald.variable} ${anton.variable} ${archivoBlack.variable} ${playfairDisplay.variable} ${fraunces.variable} ${dmSerifDisplay.variable} uareai h-full antialiased`}
+      className={`${futura.variable} ${sourceSerif4.variable} ${inconsolata.variable} ${bebasNeue.variable} ${oswald.variable} ${anton.variable} ${archivoBlack.variable} ${playfairDisplay.variable} ${fraunces.variable} ${dmSerifDisplay.variable} ${plusJakartaSans.variable} uareai h-full antialiased`}
     >
       <body className="relative z-0 flex min-h-full flex-col font-sans">
         <SmoothScroll>

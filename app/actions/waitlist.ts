@@ -1,11 +1,6 @@
 "use server";
 
-export type WaitlistState =
-  | { status: "idle" }
-  | { status: "success" }
-  | { status: "error"; message: string };
-
-export const initialWaitlistState: WaitlistState = { status: "idle" };
+import type { WaitlistState } from "@/lib/waitlist-state";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

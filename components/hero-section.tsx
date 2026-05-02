@@ -99,9 +99,25 @@ export const HEADING_FONTS = [
     varName: "--font-dm-serif-display",
     weight: 400,
   },
+  {
+    key: "plus-jakarta-sans",
+    label: "Plus Jakarta Sans",
+    varName: "--font-plus-jakarta-sans",
+    weight: 600,
+  },
 ] as const;
 
 export type HeadingFontKey = (typeof HEADING_FONTS)[number]["key"];
+
+// Heading casing options. `className` is the Tailwind utility applied to the
+// h1; "as-is" applies no transform so the source text renders verbatim.
+export const HEADING_CASES = [
+  { key: "uppercase", label: "UPPERCASE", className: "uppercase" },
+  { key: "capitalize", label: "Capitalize", className: "capitalize" },
+  { key: "lowercase", label: "lowercase", className: "lowercase" },
+] as const;
+
+export type HeadingCaseKey = (typeof HEADING_CASES)[number]["key"];
 
 const DEFAULTS = {
   delay: 200,
@@ -116,7 +132,11 @@ const DEFAULTS = {
   stackStagger: 150,
   exitRotation: 25,
   peelEase: "power2.in",
-  headingFont: "futura" as HeadingFontKey,
+  // vh of scroll allotted to each image's peel. Drives the sticky stage height
+  // and the lift duration. 100 = each image takes one viewport to peel.
+  peelScrollPerImage: 150,
+  headingFont: "plus-jakarta-sans" as HeadingFontKey,
+  headingCase: "uppercase" as HeadingCaseKey,
   imageFolder: "originals" as StackFolderKey,
 };
 
@@ -132,13 +152,19 @@ const HeroSection = () => {
   const [stackDelay, setStackDelay] = useState(DEFAULTS.stackDelay);
   const [stackDuration, setStackDuration] = useState(DEFAULTS.stackDuration);
   const [stackStagger, setStackStagger] = useState(DEFAULTS.stackStagger);
-  // pinViewports is derived (not state) — always equals PEEL_COUNT so every
-  // peeling image gets exactly 100vh of scroll regardless of stack size.
-  const pinViewports = PEEL_COUNT;
   const [exitRotation, setExitRotation] = useState(DEFAULTS.exitRotation);
   const [peelEase, setPeelEase] = useState(DEFAULTS.peelEase);
+  const [peelScrollPerImage, setPeelScrollPerImage] = useState(
+    DEFAULTS.peelScrollPerImage,
+  );
+  // pinViewports = total viewports of scroll consumed by image peels.
+  // Each image gets `peelScrollPerImage`vh, so 100vh/image == PEEL_COUNT.
+  const pinViewports = (PEEL_COUNT * peelScrollPerImage) / 100;
   const [headingFont, setHeadingFont] = useState<HeadingFontKey>(
     DEFAULTS.headingFont,
+  );
+  const [headingCase, setHeadingCase] = useState<HeadingCaseKey>(
+    DEFAULTS.headingCase,
   );
   const [imageFolder, setImageFolder] = useState<StackFolderKey>(
     DEFAULTS.imageFolder,
@@ -146,6 +172,8 @@ const HeroSection = () => {
 
   const headingFontConfig =
     HEADING_FONTS.find((f) => f.key === headingFont) ?? HEADING_FONTS[0];
+  const headingCaseConfig =
+    HEADING_CASES.find((c) => c.key === headingCase) ?? HEADING_CASES[0];
 
   const folderConfig =
     STACK_FOLDERS.find((f) => f.key === imageFolder) ?? STACK_FOLDERS[0];
@@ -239,6 +267,32 @@ const HeroSection = () => {
     }
   }, [lenis, scrollReady]);
 
+  // Skip scroll-reset on the very first run — only react to user-driven slider
+  // changes, not the initial mount.
+  const peelInitRef = useRef(true);
+  useEffect(() => {
+    if (peelInitRef.current) {
+      peelInitRef.current = false;
+      return;
+    }
+    // Stage height just changed via the inline style. Lenis caches its scroll
+    // limit from the previous document height, so without `resize()` the user
+    // can't scroll into the newly-added range — wheel events get capped at the
+    // old limit. Then snap to top so the new ScrollTrigger bounds are evaluated
+    // from progress=0 instead of whatever pixel position the user happened to
+    // be at on the old (different-height) stage, and refresh so any internally
+    // cached trigger positions catch up.
+    if (lenis) {
+      lenis.resize();
+      lenis.scrollTo(0, { immediate: true });
+    } else if (typeof window !== "undefined") {
+      window.scrollTo(0, 0);
+    }
+    if (typeof window !== "undefined") {
+      ScrollTrigger.refresh();
+    }
+  }, [peelScrollPerImage, lenis]);
+
   const heroStyle = {
     "--reveal-delay": `${delay}ms`,
     "--reveal-duration": `${duration}ms`,
@@ -272,7 +326,14 @@ const HeroSection = () => {
 
       // Threshold is the moment the last image finishes peeling — before the
       // 100vh hold tail. Crossing it lights the CTA + drops the cursor in.
-      const peelDoneAt = PEEL_COUNT / (PEEL_COUNT + 1);
+      // Timeline length = PEEL_COUNT + (1 + PEEL_COUNT/pinViewports), so the
+      // peel ends at progress pinViewports / (pinViewports + 1).
+      // Hysteresis: once highlighted, progress must fall below `exitAt`
+      // (well under the enter threshold) before un-highlighting. Prevents
+      // visible bouncing when scrub smoothing or smooth-scroll inertia
+      // keeps progress oscillating right around the threshold.
+      const enterAt = pinViewports / (pinViewports + 1);
+      const exitAt = enterAt - 0.06;
       let highlighted = false;
       let didAutoFocus = false;
 
@@ -290,7 +351,9 @@ const HeroSection = () => {
           scrub: 0.5,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
-            const should = self.progress >= peelDoneAt;
+            const should = highlighted
+              ? self.progress >= exitAt
+              : self.progress >= enterAt;
             if (should === highlighted) return;
             highlighted = should;
             waitlistRef.current?.classList.toggle("is-highlighted", should);
@@ -359,7 +422,7 @@ const HeroSection = () => {
     },
     {
       scope: sectionRef,
-      dependencies: [scrollReady, exitRotation, peelEase],
+      dependencies: [scrollReady, exitRotation, peelEase, peelScrollPerImage],
     },
   );
 
@@ -388,8 +451,10 @@ const HeroSection = () => {
     setStackDuration(DEFAULTS.stackDuration);
     setStackStagger(DEFAULTS.stackStagger);
     setExitRotation(DEFAULTS.exitRotation);
+    setPeelScrollPerImage(DEFAULTS.peelScrollPerImage);
     setPeelEase(DEFAULTS.peelEase);
     setHeadingFont(DEFAULTS.headingFont);
+    setHeadingCase(DEFAULTS.headingCase);
     setImageFolder(DEFAULTS.imageFolder);
     setReplayKey((k) => k + 1);
   };
@@ -416,7 +481,11 @@ const HeroSection = () => {
           className="stamp-impact absolute top-[12.5rem] left-1/2 flex -translate-x-1/2 items-center justify-center gap-4 font-mono text-xs tracking-[0.3em] uppercase"
         >
           <span className="bg-foreground/30 h-px w-32 flex-1" aria-hidden />
-          <span>Waitlist · Issue 01 · Apr 2026</span>
+          <span suppressHydrationWarning>
+            Waitlist · Issue 01 ·{" "}
+            {new Date().toLocaleString("en-US", { month: "short" })}{" "}
+            {new Date().getFullYear()}
+          </span>
           <span className="bg-foreground/30 h-px flex-1" aria-hidden />
         </div>
         {/* aspect-ratio + explicit -translate-x/y-1/2 keep the stack visually
@@ -450,7 +519,7 @@ const HeroSection = () => {
                   sizes="30vw"
                   draggable={false}
                   aria-hidden
-                  className="absolute inset-0 top-1/2 h-full w-full -translate-y-1/2 object-contain [filter:contrast(1.08)_saturate(0.85)_drop-shadow(0_20px_40px_rgba(0,0,0,0.15))] select-none"
+                  className="absolute inset-0 top-1/2 h-full w-full -translate-y-1/2 object-contain [filter:contrast(1.08)_saturate(0.85)_drop-shadow(0_12px_12px_rgba(0,0,0,0.05))] select-none"
                   style={{ transform: `rotate(${item.rotate})` }}
                 />
               </div>
@@ -459,14 +528,14 @@ const HeroSection = () => {
         </div>
         <div
           ref={waitlistRef}
-          className="waitlist-cta absolute bottom-16 w-full"
+          className="waitlist-cta absolute bottom-12 w-full"
         >
           <div
             key={`cta-${replayKey}`}
             className="sync-fade-in flex w-full flex-col items-center justify-center gap-4"
           >
             <h1
-              className={`${cmykSplit ? "cmyk-split" : ""} text-[min(6vw,74px)] leading-none font-black uppercase`}
+              className={`${cmykSplit ? "cmyk-split" : ""} ${headingCaseConfig.className} text-[min(6vw,74px)] leading-none font-black`}
               style={{
                 fontFamily: `var(${headingFontConfig.varName})`,
                 fontWeight: headingFontConfig.weight,
@@ -482,9 +551,7 @@ const HeroSection = () => {
                     <UMark className="h-[0.8em] w-auto" />
                     <div>are</div>
                   </div>
-                  <div>
-                    <em>AI</em>
-                  </div>
+                  <div>AI</div>
                 </div>
               </div>
               <div
@@ -495,12 +562,21 @@ const HeroSection = () => {
                 <div className="flex justify-center gap-4">
                   <div>Authentic</div>
                   <div className="relative">
-                    <div className="line-through">Artificial</div>
+                    <div className="relative z-0">
+                      <div className="bg-foreground absolute top-1/2 z-10 h-1 w-full -translate-y-1/2"></div>
+                      <div>Artificial</div>
+                    </div>
                   </div>
                 </div>
               </div>
             </h1>
-            <WaitlistInput />
+            <div className="flex flex-col items-center gap-3">
+              <p className="max-w-md text-center font-mono text-xs tracking-[0.2em]">
+                Join the waitlist for early access to the first issue — built
+                for the people putting humanity back into AI
+              </p>
+              <WaitlistInput />
+            </div>
           </div>
         </div>
         {showController && (
@@ -529,8 +605,12 @@ const HeroSection = () => {
             setExitRotation={setExitRotation}
             peelEase={peelEase}
             setPeelEase={setPeelEase}
+            peelScrollPerImage={peelScrollPerImage}
+            setPeelScrollPerImage={setPeelScrollPerImage}
             headingFont={headingFont}
             setHeadingFont={setHeadingFont}
+            headingCase={headingCase}
+            setHeadingCase={setHeadingCase}
             imageFolder={imageFolder}
             setImageFolder={setImageFolder}
             onReplay={replay}
