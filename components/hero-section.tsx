@@ -607,7 +607,7 @@ const HeroSection = () => {
             centered. The shorthand -translate-1/2 only sets one axis in
             Tailwind v4 — fine when the container collapsed to 0 height,
             broken once the box has real dimensions. */}
-        <div className="absolute top-[40%] left-1/2 -z-10 aspect-[2371/2606] w-[min(80vw,510px)] -translate-x-1/2 -translate-y-1/2 md:w-[min(50vw,430px)] lg:top-1/2 lg:w-[min(33vw,415px)]">
+        <div className="absolute top-[40%] left-1/2 -z-10 aspect-[2371/2606] w-[min(70vw,446px)] -translate-x-1/2 -translate-y-1/2 md:w-[min(43.75vw,376px)] lg:top-1/2 lg:w-[min(33vw,415px)]">
           {STACK.map((item, i) => (
             // Outer wrapper: stable identity, holds GSAP ref. Never remounts on Replay.
             // Index is fine here — STACK is module-level static, never reordered.
@@ -642,7 +642,7 @@ const HeroSection = () => {
                     grain reads as part of the printed photo. */}
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 top-1/2 h-full w-full -translate-y-1/2 bg-[url(/texture.png)] bg-repeat opacity-50"
+                  className="pointer-events-none absolute inset-0 top-1/2 hidden h-full w-full -translate-y-1/2 bg-[url(/texture.png)] bg-repeat opacity-50 lg:block"
                   style={{ transform: `rotate(${item.rotate})` }}
                 />
               </div>
@@ -659,7 +659,7 @@ const HeroSection = () => {
         />
         <div
           ref={waitlistRef}
-          className="waitlist-cta absolute top-[calc(50%+12rem)] w-full -translate-y-1/2 lg:top-[calc(50%+18rem)]"
+          className="waitlist-cta absolute top-[calc(50%+11rem)] w-full -translate-y-1/2 lg:top-[calc(50%+18rem)]"
         >
           <div
             key={`cta-${replayKey}`}
