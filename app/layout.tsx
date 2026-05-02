@@ -164,7 +164,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${futura.variable} ${sourceSerif4.variable} ${inconsolata.variable} ${bebasNeue.variable} ${oswald.variable} ${anton.variable} ${archivoBlack.variable} ${playfairDisplay.variable} ${fraunces.variable} ${dmSerifDisplay.variable} ${plusJakartaSans.variable} uareai h-full antialiased`}
+      className={`${futura.variable} ${sourceSerif4.variable} ${inconsolata.variable} ${bebasNeue.variable} ${oswald.variable} ${anton.variable} ${archivoBlack.variable} ${playfairDisplay.variable} ${fraunces.variable} ${dmSerifDisplay.variable} ${plusJakartaSans.variable} uareai h-full overflow-x-hidden overflow-y-hidden antialiased lg:overflow-y-auto`}
     >
       <body className="relative z-0 flex min-h-full flex-col font-sans">
         <SmoothScroll>
