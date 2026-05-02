@@ -17,7 +17,7 @@ const ScrollNotice = () => {
   return (
     <div
       aria-hidden={hidden}
-      className={`fixed right-6 bottom-6 z-50 flex items-center gap-2 font-mono text-[10px] tracking-[0.3em] text-foreground/70 uppercase transition-opacity duration-500 ${hidden ? "pointer-events-none opacity-0" : "opacity-100"}`}
+      className={`fixed right-6 bottom-6 z-50 hidden items-center gap-2 font-mono text-[10px] tracking-[0.3em] text-foreground/70 uppercase transition-opacity duration-500 lg:flex ${hidden ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >
       <span>Scroll</span>
       <span className="scroll-notice-track relative block h-8 w-px overflow-hidden bg-foreground/20">

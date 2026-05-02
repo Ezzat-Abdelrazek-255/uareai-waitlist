@@ -212,6 +212,20 @@ const HeroSection = () => {
 
   const lenis = useLenis();
 
+  // Tablet/mobile (or any touch-primary device) gets a non-interactive,
+  // infinitely-looping peel instead of the scroll-driven version. Default to
+  // false so SSR matches desktop and there's no hydration mismatch — the real
+  // value is applied in the effect below after mount.
+  const [isCompact, setIsCompact] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 1023px), (pointer: coarse)");
+    const update = () => setIsCompact(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
   // When the LAST CSS intro animation finishes. Three candidates:
   //   - Heading reveal line 2: delay + stagger + duration
   //   - Stack drop (last image): heading-reveal-2 + stackDelay + (n-1)*stackStagger + stackDuration
@@ -291,7 +305,7 @@ const HeroSection = () => {
     if (typeof window !== "undefined") {
       ScrollTrigger.refresh();
     }
-  }, [peelScrollPerImage, lenis]);
+  }, [peelScrollPerImage, isCompact, lenis]);
 
   const heroStyle = {
     "--reveal-delay": `${delay}ms`,
@@ -321,6 +335,70 @@ const HeroSection = () => {
       if (peelTargets.length === 0) return;
 
       gsap.set(peelTargets, { x: 0, y: 0, rotation: 0 });
+
+      // Touch / small-viewport branch: replace the scroll-driven peel with a
+      // self-running conveyor. Each tick the topmost image peels off, then
+      // snaps to the bottom of the z-stack while every other image's z bumps
+      // up by one — so a new image becomes the topmost without the user
+      // noticing a reset. After N ticks the cycle is identical to the
+      // initial state, so the timeline loops seamlessly. No CTA lift here:
+      // the heading + waitlist already sit at their target position.
+      if (isCompact) {
+        const N = peelTargets.length;
+        const peelDur = 0.9;
+        const tickDur = 1.2;
+
+        peelTargets.forEach((el, k) => {
+          gsap.set(el, { zIndex: N - 1 - k });
+        });
+
+        const tl = gsap.timeline({ repeat: -1 });
+
+        for (let tick = 0; tick < N; tick++) {
+          const peelingIdx = tick;
+          const el = peelTargets[peelingIdx];
+          const goRight = tick % 2 === 0;
+          const direction = goRight ? 1 : -1;
+          const startTime = tick * tickDur;
+
+          tl.fromTo(
+            el,
+            { x: 0, y: 0, rotation: 0 },
+            {
+              x: () => direction * window.innerWidth * 0.85,
+              y: () => -window.innerHeight * 1.0,
+              rotation: goRight ? -exitRotation : exitRotation,
+              duration: peelDur,
+              ease: peelEase,
+            },
+            startTime,
+          );
+
+          // Once the peel is offscreen, snap the image back to slot 0 (bottom
+          // of the z-stack) and bump every other image's z by one. The peeled
+          // image is teleported behind the rest while occluded by the slot
+          // above it, so the swap reads as continuous.
+          tl.set(
+            el,
+            { x: 0, y: 0, rotation: 0, zIndex: 0 },
+            startTime + peelDur,
+          );
+          peelTargets.forEach((other, k) => {
+            if (k === peelingIdx) return;
+            // After tick t, peelTargets[k]'s z = (N - k + t) mod N.
+            // Verifies: at t=N-1 every k goes back to its initial z = N-1-k,
+            // so the timeline is exactly periodic and `repeat: -1` is seamless.
+            const newZ = (N - k + tick) % N;
+            tl.set(other, { zIndex: newZ }, startTime + peelDur);
+          });
+        }
+        return;
+      }
+
+      // Desktop-only from here. Reset the waitlist CTA's transform before the
+      // lift tween below; we deliberately skip this on mobile so GSAP never
+      // overrides the Tailwind `-translate-y-1/2` that anchors the CTA at
+      // `top-[72%]`.
       const wlEl = waitlistRef.current;
       if (wlEl) gsap.set(wlEl, { y: 0 });
 
@@ -422,7 +500,13 @@ const HeroSection = () => {
     },
     {
       scope: sectionRef,
-      dependencies: [scrollReady, exitRotation, peelEase, peelScrollPerImage],
+      dependencies: [
+        scrollReady,
+        isCompact,
+        exitRotation,
+        peelEase,
+        peelScrollPerImage,
+      ],
     },
   );
 
@@ -464,7 +548,9 @@ const HeroSection = () => {
 
   // Stage height: section (1 viewport) + image-peel scroll (pinViewports) + hold (1).
   // Sticky range = stageHeight - sectionHeight = (pinViewports + 1) * 100vh.
-  const stageHeight = `${(pinViewports + 2) * 100}vh`;
+  // On mobile/tablet (`isCompact`) the peel runs on a self-driven loop, so
+  // the stage collapses to a single viewport with no scroll range.
+  const stageHeight = isCompact ? "100vh" : `${(pinViewports + 2) * 100}vh`;
 
   return (
     <div
@@ -478,21 +564,27 @@ const HeroSection = () => {
       >
         <div
           key={`kicker-${replayKey}`}
-          className="stamp-impact absolute top-[12.5rem] left-1/2 flex -translate-x-1/2 items-center justify-center gap-4 font-mono text-xs tracking-[0.3em] uppercase"
+          className="stamp-impact absolute top-[12.5rem] left-1/2 hidden -translate-x-1/2 items-center justify-center gap-4 font-mono text-xs tracking-[0.3em] uppercase lg:flex"
         >
-          <span className="bg-foreground/30 h-px w-32 flex-1" aria-hidden />
-          <span suppressHydrationWarning>
+          <span
+            className="bg-foreground/30 hidden h-px w-32 flex-1 lg:block"
+            aria-hidden
+          />
+          <span className="whitespace-nowrap" suppressHydrationWarning>
             Waitlist · Issue 01 ·{" "}
             {new Date().toLocaleString("en-US", { month: "short" })}{" "}
             {new Date().getFullYear()}
           </span>
-          <span className="bg-foreground/30 h-px flex-1" aria-hidden />
+          <span
+            className="bg-foreground/30 hidden h-px flex-1 lg:block"
+            aria-hidden
+          />
         </div>
         {/* aspect-ratio + explicit -translate-x/y-1/2 keep the stack visually
             centered. The shorthand -translate-1/2 only sets one axis in
             Tailwind v4 — fine when the container collapsed to 0 height,
             broken once the box has real dimensions. */}
-        <div className="absolute top-1/2 left-1/2 -z-10 aspect-[2371/2606] w-[min(30vw,368px)] -translate-x-1/2 -translate-y-1/2">
+        <div className="absolute top-[40%] left-1/2 -z-10 aspect-[2371/2606] w-[min(75vw,460px)] -translate-x-1/2 -translate-y-1/2 md:w-[min(45vw,380px)] lg:top-1/2 lg:w-[min(30vw,368px)]">
           {STACK.map((item, i) => (
             // Outer wrapper: stable identity, holds GSAP ref. Never remounts on Replay.
             // Index is fine here — STACK is module-level static, never reordered.
@@ -526,16 +618,24 @@ const HeroSection = () => {
             </div>
           ))}
         </div>
+        {/* Mobile/tablet readability overlay. Sits above the stack but below
+            kicker/CTA in DOM order, so it dims/blurs the looping images
+            without occluding the foreground. Hidden on lg+ where the scroll
+            peel reveals the CTA on its own. */}
+        <div
+          aria-hidden
+          className="bg-background/25 pointer-events-none absolute inset-0 lg:hidden"
+        />
         <div
           ref={waitlistRef}
-          className="waitlist-cta absolute bottom-12 w-full"
+          className="waitlist-cta absolute top-[72%] w-full -translate-y-1/2 lg:top-auto lg:bottom-12 lg:translate-y-0"
         >
           <div
             key={`cta-${replayKey}`}
             className="sync-fade-in flex w-full flex-col items-center justify-center gap-4"
           >
             <h1
-              className={`${cmykSplit ? "cmyk-split" : ""} ${headingCaseConfig.className} text-[min(6vw,74px)] leading-none font-black`}
+              className={`${cmykSplit ? "cmyk-split" : ""} ${headingCaseConfig.className} text-[8vw] leading-none font-black lg:text-[min(6vw,74px)]`}
               style={{
                 fontFamily: `var(${headingFontConfig.varName})`,
                 fontWeight: headingFontConfig.weight,
@@ -570,8 +670,8 @@ const HeroSection = () => {
                 </div>
               </div>
             </h1>
-            <div className="flex flex-col items-center gap-3">
-              <p className="max-w-md text-center font-mono text-xs tracking-[0.2em]">
+            <div className="flex w-full flex-col items-center gap-3 px-6 md:px-4">
+              <p className="max-w-[22rem] text-center font-mono text-xs tracking-[0.2em] md:max-w-md">
                 Join the waitlist for early access to the first issue — built
                 for the people putting humanity back into AI
               </p>
@@ -579,7 +679,7 @@ const HeroSection = () => {
             </div>
           </div>
         </div>
-        {showController && (
+        {showController && !isCompact && (
           <HeroAnimationController
             delay={delay}
             setDelay={setDelay}
