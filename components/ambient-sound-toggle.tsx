@@ -164,7 +164,7 @@ const AmbientSoundToggle = () => {
       aria-pressed={on}
       aria-label={on ? "Mute ambient sound" : "Play ambient sound"}
       title={on ? "Mute ambient sound" : "Play ambient sound"}
-      className="fixed bottom-6 left-6 z-50 grid h-12 w-12 place-content-center rounded-full border border-foreground/20 bg-background/60 text-foreground/70 backdrop-blur-sm transition-colors hover:text-foreground hover:border-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40"
+      className="fixed bottom-6 left-6 z-50 hidden h-12 w-12 place-content-center rounded-full border border-foreground/20 bg-background/60 text-foreground/70 backdrop-blur-sm transition-colors hover:text-foreground hover:border-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 md:grid"
     >
       <svg
         viewBox={`0 0 ${WAVE_W} ${WAVE_H}`}
