@@ -9,7 +9,7 @@ const Logo = () => {
         width={1861}
         height={487}
         priority
-        className="w-32 lg:w-52"
+        className="w-32 lg:w-44"
       />
     </div>
   );

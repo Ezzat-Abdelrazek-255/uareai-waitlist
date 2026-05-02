@@ -564,7 +564,7 @@ const HeroSection = () => {
       >
         <div
           key={`kicker-${replayKey}`}
-          className="stamp-impact absolute top-[12.5rem] left-1/2 hidden -translate-x-1/2 items-center justify-center gap-4 font-mono text-xs tracking-[0.3em] uppercase lg:flex"
+          className="stamp-impact absolute top-[10rem] left-1/2 hidden -translate-x-1/2 items-center justify-center gap-4 font-mono text-xs tracking-[0.3em] uppercase lg:flex"
         >
           <span
             className="bg-foreground/30 hidden h-px w-32 flex-1 lg:block"
