@@ -12,6 +12,8 @@ import {
   Source_Serif_4,
 } from "next/font/google";
 import localFont from "next/font/local";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "@/styles/css/index.css";
 import AmbientSoundToggle from "@/components/ambient-sound-toggle";
 import Header from "@/components/header";
@@ -174,6 +176,8 @@ export default function RootLayout({
           <AmbientSoundToggle />
           <ScrollNotice />
         </SmoothScroll>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
