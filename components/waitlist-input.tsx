@@ -35,7 +35,7 @@ const WaitlistInput = () => {
           disabled={isPending}
           placeholder="Enter your email"
           aria-label="Email"
-          className="text-foreground placeholder:text-foreground/60 min-w-0 flex-1 bg-transparent py-1.5 text-xs outline-none disabled:opacity-50 md:text-sm"
+          className="text-foreground placeholder:text-foreground/60 min-w-0 flex-1 bg-transparent py-1.5 text-base outline-none disabled:opacity-50 lg:text-sm"
         />
         <button
           type="submit"
