@@ -18,7 +18,7 @@ if (typeof window !== "undefined") {
 // composition stays consistent across folders; the image index per slot is
 // derived from the folder size at render time so we only repeat when a
 // folder has fewer images than slots.
-const STACK_ROTATES = ["3deg", "0deg", "-4deg", "0deg", "-4deg", "0deg"];
+const STACK_ROTATES = ["8deg", "-3deg", "-11deg", "5deg", "-8deg", "2deg"];
 
 // Image folders the user can switch between in the controller. Each folder
 // holds files named `{idx}.png` starting at 0; `dims` is intrinsic size per
@@ -495,15 +495,15 @@ const HeroSection = () => {
         );
       });
 
-      // Lift the waitlist CTA upward across the last peel slot + the hold slot.
-      // Replaces the prior empty-hold tween — total timeline length is unchanged
-      // (peelTargets.length - 1 + (1 + peelTargets.length / pinViewports) =
-      // peelTargets.length + peelTargets.length / pinViewports), so peelDoneAt
-      // and the sticky scroll range stay correct. offsetTop / offsetHeight are
-      // transform-agnostic, so the function re-evaluates correctly on refresh
-      // regardless of the wrapper's current transform.
-      const liftDuration = 1 + peelTargets.length / pinViewports;
-      const liftStart = peelTargets.length - 1;
+      // Lift the waitlist CTA upward across the hold slot only — starts AFTER
+      // the last image has fully peeled, so the heading container's translate-up
+      // is sequential, not concurrent with the final peel.
+      // Total timeline length stays peelTargets.length + peelTargets.length / pinViewports,
+      // so the sticky scroll range and CTA highlight threshold stay correct.
+      // offsetTop / offsetHeight are transform-agnostic, so the function
+      // re-evaluates correctly on refresh regardless of the wrapper's transform.
+      const liftDuration = peelTargets.length / pinViewports;
+      const liftStart = peelTargets.length;
       tl.to(
         wlEl,
         {
@@ -607,7 +607,7 @@ const HeroSection = () => {
             centered. The shorthand -translate-1/2 only sets one axis in
             Tailwind v4 — fine when the container collapsed to 0 height,
             broken once the box has real dimensions. */}
-        <div className="absolute top-[40%] left-1/2 -z-10 aspect-[2371/2606] w-[min(70vw,446px)] -translate-x-1/2 -translate-y-1/2 md:w-[min(43.75vw,376px)] lg:top-1/2 lg:w-[min(33vw,415px)]">
+        <div className="absolute top-[40%] left-1/2 -z-10 aspect-[2371/2606] w-[min(70vw,446px)] -translate-x-1/2 -translate-y-1/2 md:w-[min(43.75vw,376px)] lg:top-[48%] lg:w-[min(33vw,415px)]">
           {STACK.map((item, i) => (
             // Outer wrapper: stable identity, holds GSAP ref. Never remounts on Replay.
             // Index is fine here — STACK is module-level static, never reordered.
