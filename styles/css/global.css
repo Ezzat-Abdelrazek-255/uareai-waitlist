@@ -111,6 +111,69 @@ html {
   font-size: 0.95em;
 }
 
+/* Cookie banner — slide + fade in from the bottom-right after the delay,
+   slide + fade out on dismissal (scroll, accept, decline). */
+@keyframes cookie-banner-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cookie-banner-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.cookie-banner-in {
+  animation: cookie-banner-in 480ms var(--ease-smooth) both;
+}
+
+.cookie-banner-out {
+  animation: cookie-banner-out 320ms var(--ease-smooth) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cookie-banner-in,
+  .cookie-banner-out {
+    animation: none;
+  }
+}
+
+/* Vintage printed-marker hover for inline links inside the cookie banner.
+   At rest: a dotted underline (sits closer to a typewriter stamp than a web
+   underline). On hover: a sweep of spark-yellow highlight behind the text,
+   mirroring `mark.marker` used elsewhere in the brand system. Padding is
+   permanent so layout doesn't jump on hover. */
+.cookie-banner-link {
+  position: relative;
+  padding: 0 0.18em;
+  margin: 0 -0.18em;
+  text-decoration: underline dotted
+    color-mix(in srgb, var(--foreground) 55%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition:
+    background-color 220ms var(--ease-smooth),
+    text-decoration-color 220ms var(--ease-smooth);
+}
+
+.cookie-banner-link:hover,
+.cookie-banner-link:focus-visible {
+  background-color: var(--spark-yellow);
+  text-decoration-color: transparent;
+}
+
 .legal-prose .legal-callout {
   margin-top: 1.6em;
   margin-bottom: 1.6em;

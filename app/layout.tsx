@@ -16,6 +16,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "@/styles/css/index.css";
 import AmbientSoundToggle from "@/components/ambient-sound-toggle";
+import CookieBanner from "@/components/cookie-banner";
 import Header from "@/components/header";
 import IssueTicker from "@/components/issue-ticker";
 import NoiseOverlay from "@/components/noise-overlay";
@@ -179,6 +180,7 @@ export default function RootLayout({
           <TextureOverlay />
           <NoiseOverlay />
           <AmbientSoundToggle />
+          <CookieBanner />
         </SmoothScroll>
         <Analytics />
         <SpeedInsights />

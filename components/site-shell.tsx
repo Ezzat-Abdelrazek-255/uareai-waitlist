@@ -34,6 +34,7 @@ const FOOTER_LINKS: ReadonlyArray<FooterLink> = [
 const LEGAL_LINKS = [
   { label: "Terms", href: "/terms-of-service" },
   { label: "Privacy", href: "/privacy-policy" },
+  { label: "Cookies", href: "/cookie-notice" },
 ] as const;
 
 const SiteFooter = () => {
