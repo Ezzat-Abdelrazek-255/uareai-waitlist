@@ -4,6 +4,127 @@ html {
   scrollbar-gutter: stable;
 }
 
+/* Editorial typography for legal/long-form prose. Scoped, not global. */
+.legal-prose > * + * {
+  margin-top: 1.1em;
+}
+
+.legal-prose h2 {
+  margin-top: 3.5em;
+  margin-bottom: 0.4em;
+  padding-top: 1.4em;
+  border-top: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  font-family: var(--font-plus-jakarta-sans);
+  font-weight: 600;
+  font-size: 1.75rem;
+  letter-spacing: -0.005em;
+  line-height: 1.15;
+  color: var(--foreground);
+}
+
+.legal-prose h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.legal-prose h3 {
+  margin-top: 2.4em;
+  margin-bottom: 0.2em;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  color: var(--foreground);
+}
+
+.legal-prose h4 {
+  margin-top: 1.8em;
+  margin-bottom: 0.1em;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--foreground) 70%, transparent);
+}
+
+.legal-prose p {
+  margin: 0;
+}
+
+.legal-prose strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.legal-prose em {
+  font-style: italic;
+}
+
+.legal-prose a {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, var(--foreground) 35%, transparent);
+  transition: text-decoration-color 200ms var(--ease-smooth);
+}
+
+.legal-prose a:hover {
+  text-decoration-color: var(--spark-orange);
+}
+
+.legal-prose ul,
+.legal-prose ol {
+  padding-left: 1.4em;
+}
+
+.legal-prose ul {
+  list-style: disc;
+}
+
+.legal-prose ol {
+  list-style: decimal;
+}
+
+.legal-prose li + li {
+  margin-top: 0.45em;
+}
+
+.legal-prose li::marker {
+  color: color-mix(in srgb, var(--foreground) 45%, transparent);
+}
+
+.legal-prose hr {
+  margin: 3em 0;
+  border: none;
+  border-top: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+}
+
+.legal-prose blockquote {
+  margin-top: 1.6em;
+  margin-bottom: 1.6em;
+  padding: 1em 1.25em;
+  border-left: 2px solid var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  font-style: italic;
+  font-size: 0.95em;
+}
+
+.legal-prose .legal-callout {
+  margin-top: 1.6em;
+  margin-bottom: 1.6em;
+  padding: 1.1em 1.25em;
+  border: 1px solid color-mix(in srgb, var(--foreground) 14%, transparent);
+  background: color-mix(in srgb, var(--foreground) 3%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  line-height: 1.55;
+  text-transform: uppercase;
+  color: var(--foreground);
+}
+
 html.light {
   color-scheme: light;
 }

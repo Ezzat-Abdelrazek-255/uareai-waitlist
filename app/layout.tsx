@@ -19,7 +19,6 @@ import AmbientSoundToggle from "@/components/ambient-sound-toggle";
 import Header from "@/components/header";
 import IssueTicker from "@/components/issue-ticker";
 import NoiseOverlay from "@/components/noise-overlay";
-import ScrollNotice from "@/components/scroll-notice";
 import SmoothScroll from "@/components/smooth-scroll";
 import TextureOverlay from "@/components/texture-overlay";
 
@@ -96,14 +95,17 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 // Update SITE_URL to match the deployed origin so OG/canonical URLs resolve correctly.
 const SITE_URL = "https://www.uare.ai";
 const SITE_NAME = "Uare.ai";
-const SITE_TAGLINE = "Authentic over Artificial";
+// Mirrors the SEO copy on the live Webflow home page so search results stay
+// aligned during the migration. Keep these in sync if marketing edits the
+// Webflow `Home` page metadata.
+const SITE_TITLE = "Uare.ai | The Future of Personal AI";
 const SITE_DESCRIPTION =
-  "Human-first AI for brands and creators who refuse to fake it. Join the Uare.ai waitlist — Issue 01, April 2026.";
+  "Uare.ai lets you shape a Personal AI that learns from your stories, values, and experiences. Private, authentic, and designed to grow with you.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    default: SITE_TITLE,
     template: `%s · ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -113,12 +115,12 @@ export const metadata: Metadata = {
   publisher: SITE_NAME,
   keywords: [
     "Uare.ai",
+    "Personal AI",
+    "Individual AI",
+    "AI digital twin",
     "human-first AI",
-    "AI for brands",
-    "AI for creators",
-    "authentic AI",
+    "private AI",
     "AI waitlist",
-    "personal AI",
   ],
   alternates: {
     canonical: "/",
@@ -127,13 +129,13 @@ export const metadata: Metadata = {
     type: "website",
     url: "/",
     siteName: SITE_NAME,
-    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     creator: "@uareai",
   },
@@ -166,7 +168,10 @@ export default function RootLayout({
       lang="en"
       className={`${futura.variable} ${sourceSerif4.variable} ${inconsolata.variable} ${bebasNeue.variable} ${oswald.variable} ${anton.variable} ${archivoBlack.variable} ${playfairDisplay.variable} ${fraunces.variable} ${dmSerifDisplay.variable} ${plusJakartaSans.variable} uareai h-full antialiased`}
     >
-      <body className="relative z-0 flex min-h-full flex-col font-sans max-lg:overflow-hidden">
+      <body className="relative z-0 flex min-h-full flex-col font-sans">
+        {/* Body intentionally is not pinned to overflow-hidden. The home hero
+            owns its own intro lock via inline body style; non-home routes need
+            native scroll. */}
         <SmoothScroll>
           <IssueTicker />
           <Header />
@@ -174,7 +179,6 @@ export default function RootLayout({
           <TextureOverlay />
           <NoiseOverlay />
           <AmbientSoundToggle />
-          <ScrollNotice />
         </SmoothScroll>
         <Analytics />
         <SpeedInsights />

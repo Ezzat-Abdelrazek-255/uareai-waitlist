@@ -118,7 +118,7 @@ const Hint = ({ text }: { text: string }) => (
     </span>
     <span
       role="tooltip"
-      className="pointer-events-none absolute top-full right-0 z-50 mt-1 w-56 rounded-sm border border-[var(--border)] bg-[var(--color-foreground)] px-2 py-1.5 text-[10px] leading-snug font-normal tracking-normal normal-case text-[var(--color-background)] opacity-0 shadow-lg transition-opacity duration-100 group-hover:opacity-100 group-focus-within:opacity-100"
+      className="pointer-events-none absolute top-full right-0 z-50 mt-1 w-56 rounded-sm border border-foreground/15 bg-foreground px-2 py-1.5 text-[10px] leading-snug font-normal tracking-normal normal-case text-background opacity-0 shadow-lg transition-opacity duration-100 group-hover:opacity-100 group-focus-within:opacity-100"
     >
       {text}
     </span>
@@ -134,7 +134,7 @@ const Section = ({
   description?: string;
   children: React.ReactNode;
 }) => (
-  <div className="flex flex-col gap-3 border-t border-[var(--border)] pt-3">
+  <div className="flex flex-col gap-3 border-t border-foreground/15 pt-3">
     <div className="relative flex items-center gap-1.5">
       <span className="text-[11px] font-semibold tracking-[0.18em] uppercase">
         {title}
@@ -233,7 +233,7 @@ const HeroAnimationController = ({
         type="button"
         onClick={() => setMinimized(false)}
         aria-label="Open intro animation tweaks"
-        className="fixed right-4 bottom-20 z-50 rounded-full border border-[var(--border)] bg-[var(--color-background)]/80 px-3 py-2 font-mono text-[10px] tracking-[0.2em] uppercase opacity-80 shadow-lg backdrop-blur hover:opacity-100"
+        className="fixed right-4 bottom-20 z-50 rounded-full border border-foreground/15 bg-background/80 px-3 py-2 font-mono text-[10px] tracking-[0.2em] uppercase opacity-80 shadow-lg backdrop-blur hover:opacity-100"
       >
         Intro tweaks ▴
       </button>
@@ -242,7 +242,7 @@ const HeroAnimationController = ({
 
   return (
     <div
-      className="fixed right-4 bottom-4 z-50 flex max-h-[calc(70dvh-2rem)] w-[300px] flex-col gap-3 overflow-y-auto overscroll-contain rounded-[var(--radius)] border border-[var(--border)] bg-[var(--color-background)]/85 p-3 font-mono text-xs shadow-lg backdrop-blur"
+      className="fixed right-4 bottom-4 z-50 flex max-h-[calc(70dvh-2rem)] w-[300px] flex-col gap-3 overflow-y-auto overscroll-contain rounded-lg border border-foreground/15 bg-background/85 p-3 font-mono text-xs shadow-lg backdrop-blur"
       role="region"
       aria-label="Intro animation tweaks"
       data-lenis-prevent
@@ -262,7 +262,7 @@ const HeroAnimationController = ({
             type="button"
             onClick={onReset}
             title="Restore all controls to their defaults"
-            className="rounded-sm border border-[var(--border)] px-2 py-0.5 text-[10px] uppercase hover:opacity-80"
+            className="rounded-sm border border-foreground/15 px-2 py-0.5 text-[10px] uppercase hover:opacity-80"
           >
             Reset
           </button>
@@ -270,7 +270,7 @@ const HeroAnimationController = ({
             type="button"
             onClick={onReplay}
             title="Replay the intro animation from the top"
-            className="rounded-sm bg-[var(--color-foreground)] px-2 py-0.5 text-[10px] text-[var(--color-background)] uppercase hover:opacity-80"
+            className="rounded-sm bg-foreground px-2 py-0.5 text-[10px] text-background uppercase hover:opacity-80"
           >
             Replay
           </button>
@@ -279,7 +279,7 @@ const HeroAnimationController = ({
             onClick={() => setMinimized(true)}
             aria-label="Minimize"
             title="Minimize panel"
-            className="rounded-sm border border-[var(--border)] px-2 py-0.5 text-[10px] uppercase hover:opacity-80"
+            className="rounded-sm border border-foreground/15 px-2 py-0.5 text-[10px] uppercase hover:opacity-80"
           >
             ▾
           </button>
@@ -298,7 +298,7 @@ const HeroAnimationController = ({
           <select
             value={headingFont}
             onChange={(e) => setHeadingFont(e.target.value as HeadingFontKey)}
-            className="rounded-sm border border-[var(--border)] bg-transparent px-1 py-1 text-xs"
+            className="rounded-sm border border-foreground/15 bg-transparent px-1 py-1 text-xs"
           >
             {HEADING_FONTS.map((f) => (
               <option key={f.key} value={f.key}>
@@ -316,7 +316,7 @@ const HeroAnimationController = ({
           <select
             value={headingCase}
             onChange={(e) => setHeadingCase(e.target.value as HeadingCaseKey)}
-            className="rounded-sm border border-[var(--border)] bg-transparent px-1 py-1 text-xs"
+            className="rounded-sm border border-foreground/15 bg-transparent px-1 py-1 text-xs"
           >
             {HEADING_CASES.map((c) => (
               <option key={c.key} value={c.key}>
@@ -396,7 +396,7 @@ const HeroAnimationController = ({
           <select
             value={easing}
             onChange={(e) => setEasing(e.target.value)}
-            className="rounded-sm border border-[var(--border)] bg-transparent px-1 py-1 text-xs"
+            className="rounded-sm border border-foreground/15 bg-transparent px-1 py-1 text-xs"
           >
             {EASINGS.map(({ value, label }) => (
               <option key={value} value={value}>
@@ -449,7 +449,7 @@ const HeroAnimationController = ({
           <select
             value={imageFolder}
             onChange={(e) => setImageFolder(e.target.value as StackFolderKey)}
-            className="rounded-sm border border-[var(--border)] bg-transparent px-1 py-1 text-xs"
+            className="rounded-sm border border-foreground/15 bg-transparent px-1 py-1 text-xs"
           >
             {STACK_FOLDERS.map((f) => (
               <option key={f.key} value={f.key}>
@@ -517,7 +517,7 @@ const HeroAnimationController = ({
           <select
             value={peelEase}
             onChange={(e) => setPeelEase(e.target.value)}
-            className="rounded-sm border border-[var(--border)] bg-transparent px-1 py-1 text-xs"
+            className="rounded-sm border border-foreground/15 bg-transparent px-1 py-1 text-xs"
           >
             {PEEL_EASES.map(({ value, label }) => (
               <option key={value} value={value}>

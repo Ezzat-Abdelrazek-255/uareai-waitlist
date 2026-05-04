@@ -1,8 +1,9 @@
 import Image from "next/image";
+import Link from "next/link";
 
 const Logo = () => {
   return (
-    <div>
+    <Link href="/" aria-label="Uare.ai — home" className="inline-block">
       <Image
         src="/logos/uare-mono-black.png"
         alt="Uare.ai"
@@ -11,7 +12,7 @@ const Logo = () => {
         priority
         className="w-32 lg:w-44"
       />
-    </div>
+    </Link>
   );
 };
 

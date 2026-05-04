@@ -10,7 +10,7 @@ const WaitlistInput = () => {
     initialWaitlistState,
   );
 
-  if (state.status === "success") {
+  if (state.ok) {
     return (
       <p
         role="status"
@@ -26,7 +26,7 @@ const WaitlistInput = () => {
     <div className="pointer-events-auto flex w-full max-w-md flex-col items-center gap-2">
       <form
         action={formAction}
-        className="border-foreground flex w-full items-center gap-2 rounded-full border bg-black/0 p-1.5 pl-4 font-mono md:pl-5"
+        className="border-foreground flex w-full items-center gap-2 rounded-full border bg-transparent p-1.5 pl-4 font-mono md:pl-5"
       >
         <input
           type="email"
@@ -40,7 +40,7 @@ const WaitlistInput = () => {
         <button
           type="submit"
           disabled={isPending}
-          className="bg-foreground text-background flex h-full shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-mono disabled:opacity-60 md:gap-2 md:text-sm"
+          className="bg-foreground text-background flex h-full shrink-0 items-center gap-1.5 rounded-full px-4 py-2 font-mono text-xs disabled:opacity-60 md:gap-2 md:text-sm"
         >
           <UMark className="h-[0.9em] w-auto" />
           <span>
@@ -49,9 +49,9 @@ const WaitlistInput = () => {
           </span>
         </button>
       </form>
-      {state.status === "error" && (
+      {state.error && (
         <p role="alert" className="text-foreground/70 font-mono text-xs">
-          {state.message}
+          {state.error}
         </p>
       )}
     </div>

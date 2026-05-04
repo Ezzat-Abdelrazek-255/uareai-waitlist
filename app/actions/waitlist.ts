@@ -4,6 +4,8 @@ import type { WaitlistState } from "@/lib/waitlist-state";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const fail = (error: string): WaitlistState => ({ ok: false, error });
+
 export async function joinWaitlist(
   _prev: WaitlistState,
   formData: FormData,
@@ -12,7 +14,7 @@ export async function joinWaitlist(
   const email = typeof raw === "string" ? raw.trim() : "";
 
   if (!email || email.length > 254 || !EMAIL_REGEX.test(email)) {
-    return { status: "error", message: "Please enter a valid email." };
+    return fail("Please enter a valid email.");
   }
 
   const portalId = process.env.HUBSPOT_PORTAL_ID;
@@ -23,10 +25,7 @@ export async function joinWaitlist(
     console.error(
       "[waitlist] Missing HUBSPOT_PORTAL_ID or HUBSPOT_FORM_GUID env var.",
     );
-    return {
-      status: "error",
-      message: "Waitlist is temporarily unavailable. Please try again later.",
-    };
+    return fail("Waitlist is temporarily unavailable. Please try again later.");
   }
 
   const base =
@@ -45,27 +44,20 @@ export async function joinWaitlist(
     });
 
     if (res.ok) {
-      return { status: "success" };
+      return { ok: true };
     }
 
     const body = await res.text().catch(() => "");
     console.error(`[waitlist] HubSpot ${res.status}: ${body}`);
 
     if (res.status === 400) {
-      return {
-        status: "error",
-        message: "We couldn't accept that email. Please double-check and try again.",
-      };
+      return fail(
+        "We couldn't accept that email. Please double-check and try again.",
+      );
     }
-    return {
-      status: "error",
-      message: "Something went wrong. Please try again.",
-    };
+    return fail("Something went wrong. Please try again.");
   } catch (err) {
     console.error("[waitlist] Network error:", err);
-    return {
-      status: "error",
-      message: "Network error. Please try again.",
-    };
+    return fail("Network error. Please try again.");
   }
 }

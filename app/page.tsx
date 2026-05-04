@@ -1,9 +1,12 @@
 import HeroSection from "@/components/hero-section";
+import ScrollNotice from "@/components/scroll-notice";
+import SiteShell from "@/components/site-shell";
 
 export default function Home() {
   return (
-    <main className="relative z-0">
+    <SiteShell>
       <HeroSection />
-    </main>
+      <ScrollNotice />
+    </SiteShell>
   );
 }

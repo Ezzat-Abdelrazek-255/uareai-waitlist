@@ -269,13 +269,22 @@ const HeroSection = () => {
       return;
     }
 
+    // Touch / small-viewport branch uses a self-running peel loop with no
+    // scroll-driven scrub to protect, so we skip the body lock there. Locking
+    // the page for ~4s of intro on mobile hides the footer and feels broken.
+    const isTouch = window.matchMedia(
+      "(max-width: 1023px), (pointer: coarse)",
+    ).matches;
+
     // Defeat browser scroll restoration — start at the top so ScrollTrigger
     // pin engages with `progress = 0`, not whatever scroll the browser remembered.
     if ("scrollRestoration" in window.history) {
       window.history.scrollRestoration = "manual";
     }
     window.scrollTo(0, 0);
-    document.body.style.overflow = "hidden";
+    if (!isTouch) {
+      document.body.style.overflow = "hidden";
+    }
 
     const t = window.setTimeout(() => {
       document.body.style.overflow = "";
@@ -292,6 +301,9 @@ const HeroSection = () => {
 
   // 2. Lenis follows `scrollReady`. Runs whenever lenis appears or scrollReady
   //    flips, so we don't depend on lenis being ready at mount-time.
+  //    Lenis is owned by the root layout, so it survives route changes — if the
+  //    user navigates away while we're still in the stopped (intro) state, the
+  //    next route inherits a frozen scroller. Restart on unmount as insurance.
   useEffect(() => {
     if (!lenis) return;
     if (scrollReady) {
@@ -299,6 +311,9 @@ const HeroSection = () => {
     } else {
       lenis.stop();
     }
+    return () => {
+      lenis.start();
+    };
   }, [lenis, scrollReady]);
 
   // Skip scroll-reset on the very first run — only react to user-driven slider
@@ -566,8 +581,8 @@ const HeroSection = () => {
     setReplayKey((k) => k + 1);
   };
 
-  // Shown in production too so the client can tweak the intro on the live site.
-  const showController = true;
+  // Dev-only: intro tweak panel is hidden in production builds.
+  const showController = process.env.NODE_ENV !== "production";
 
   // Stage height: section (1 viewport) + image-peel scroll (pinViewports) + hold (1).
   // Sticky range = stageHeight - sectionHeight = (pinViewports + 1) * 100vh.
